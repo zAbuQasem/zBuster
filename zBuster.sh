@@ -238,7 +238,7 @@ do
 		nfs $host
 		pop3 $host $p
 		smb $host
-		wp $host $p
+		#http $host $p
 	elif [[ "$a" == "nmap" ]]; then
 		full_ps $host
 	elif [[ "$a" == "smb" ]]; then
@@ -261,7 +261,7 @@ do
 	if [[ "${OPTARG}" == "http" ]]
 		then
 			d=${OPTARG}
-			Dirbusting $d $host $p $x
+			Dirbusting $d $host $p $x &
 			sleep 3
 				
 		elif [[ "${OPTARG}" == "https" ]]
