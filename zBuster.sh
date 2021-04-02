@@ -7,54 +7,66 @@
 #4-wpscan
 #6-crackmapexec
 
+RED="\e[31m"
+GRAY="\e[37m"
+GREEN="\e[32m"
+BLUE="\e[34m"
+LIGHTBLUE="\e[94m"
+ENDCOLOR="\e[0m"
+YELLOW="\e[33m"
+FYELLOW="\e[43m"
+LIGHTGREEN="\e[92m"
+CYAN="\e[35m"
+
+
 mkdir Results 2>/dev/null
 
 function usage
 {
-	echo "                       [+]Please Pay Attention To The Values And Their Positions[+]"
-	echo "OPTIONS:"
-	echo "-u         Mandatory to provide TARGET-IP"
-	echo "-p         Specify a Port number."
-	echo "-d         For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>"
-	echo "-x         For providing extentions for Dirbusting example : -x php  OR -x php,txt"
-	echo "-a         To specifiy what to scan"
-	echo "           Available OPTIONS : NMAP (full port scan)| SMTP | DNS | <port80> | POP3 | IMAP | SMB | NFS"  #specify for port 80
-	echo "-a all     To scan everything! <except dirbusting> //RECOMMENDED"
+	echo -e "                       ${BLUE}[*]${ENDCOLOR}${GRAY}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	echo -e "${GRAY}OPTIONS:${ENDCOLOR}"
+	echo -e "-u         ${CYAN}Mandatory to provide TARGET-IP${ENDCOLOR}"
+	echo -e "-p         ${CYAN}Specify a Port number.${ENDCOLOR}"
+	echo -e "-d         ${CYAN}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
+	echo -e "-x         ${CYAN}For providing extentions for Dirbusting example : -x php  OR -x php,txt${ENDCOLOR}"
+	echo -e "-a         ${CYAN}To specifiy what to scan${ENDCOLOR}"
+	echo -e "           ${CYAN}Available OPTIONS : NMAP (full port scan)| SMTP | DNS | <port80> | POP3 | IMAP | SMB | NFS${ENDCOLOR}"  #specify for port 80
+	echo -e "-a all     ${CYAN}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
 	echo " "
 	echo "USAGE EXAMPLES:"  					#///ADD more examples
-	echo "  $0 -u <TARGET-IP> OPTIONS..."
-	echo "  $0 -u 127.0.0.1 -p 80 -x php -d http"
-	echo "  $0 -u 127.0.0.1 -p 443 -x php,txt -d https"
-	echo "  $0 -u 127.0.0.1 -a all"
-	echo "  $0 -u 127.0.0.1 -a nfs"
-	echo "  $0 -u 127.0.0.1 -a{nfs,pop3,smb}  //To scan multiple services"
+	echo -e  " ${LIGHTGREEN} $0 -u <TARGET-IP> OPTIONS... ${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 80 -x php -d http ${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 443 -x php,txt -d https${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a all${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a nfs${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a{nfs,pop3,smb} ${ENDCOLOR} ${RED}//To Scan Multiple Services${ENDCOLOR}"
 
 }
 
 function portcheck
 {
-	echo "[*]Running an initial portscan ..."
+	echo -e "${BLUE}[*]${ENDCOLOR}Running an initial portscan ..."
 	portsnmap=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > portsfromrust ; cat portsfromrust)
 	cat portsfromrust | tr "," "\n" > Results/ports ; rm portsfromrust  #here is created a file containing the ports
 	s=$(cat Results/ports)
 	for i in $s
 	do
-		echo "[+]Found Port -> $i"
+		echo -e "${BLUE}[+]${ENDCOLOR}${YELLOW}Found Port${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
 	done
 	echo ""
 }
 
 function full_ps #FUll portscan + All checks
 {
-	echo "[*]Enumerating open ports..."
+	echo -e "${BLUE}[*]${ENDCOLOR}Enumerating open ports..."
 	n=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > catted ; cat catted)
-	echo -n "[+]"
+	echo -e  -n "${BLUE}[+]${ENDCOLOR}"
 	rm catted
 	nmap -Pn -A -p$n -T5 $host -oN Results/nmap-result > file ; rm file
-	echo "[*]Doing Nmap-Vuln scan ..."
-	echo -n "[*]"
+	echo -e "${BLUE}[*]${ENDCOLOR}Doing Nmap-Vuln scan ..."
+	echo -e -n "${BLUE}[*]${ENDCOLOR}"
 	nmap -Pn -p$n -T5 --script vuln $host -oN Results/nmapVuln-result > file ; rm file
-	echo "[+]Done! check --> 'Results/nmap-result  &&  Results/nmapVuln-result"
+	echo -e "${YELLOW}[+]${ENDCOLOR}Done! check --> ${FYELLOW}Results/nmap-result${ENDCOLOR} &&  ${FYELLOW}Results/nmapVuln-result${ENDCOLOR}"
 	echo ""
 	#cat Results/nmap-result
 
@@ -66,24 +78,24 @@ function smtp
 	for i in $q
 	do
 		if [[ "$i" == "25" ]]; then
-			echo "[*]Enumerating SMTP (users)..."
-			echo -n "[*]"
+			echo -e "${BLUE}[*]${ENDCOLOR}Enumerating SMTP (users)..."
+			echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			nmap -Pn -T5 --script smtp-enum-users $host
-			echo "[*]Learn more: https://book.hacktricks.xyz/pentesting/pentesting-smtp"
+			echo -e "${BLUE}[*]${ENDCOLOR}Learn more: https://book.hacktricks.xyz/pentesting/pentesting-smtp"
 		fi
 	done
 
 
 }
-#
+
 function pop3
 {
 	q=$(cat Results/ports)
 	for i in $q
 	do
 		if [[ "$i" == "110" ]]; then
-			echo "[*]Enumerating POP3 capabilties ..."
-			echo -n "[*]"
+			echo -e "${BLUE}[*]${ENDCOLOR}Enumerating POP3 capabilties ..."
+			echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			nmap -Pn -T5 --script pop3-capabilities -sV $host #All are default scripts
 		fi
 	done
@@ -95,10 +107,9 @@ function dns
 	for i in $q
 	do
 		if [[ "$i" == "53" ]]; then
-			echo "[*]Running a Zone Transfer..."
+			echo -e "${BLUE}[*]${ENDCOLOR}Running a Zone Transfer..."
 			dig axfr @$host
-			echo "[+]If no results appeared try appending the domain to 'dig axfr @<TARGET-IP> <DOMAIN NAME>' command"
-			echo "[*]Learn more : https://book.hacktricks.xyz/pentesting/pentesting-dns#zone-transfer"
+			echo -e "${YELLOW}[+]${ENDCOLOR}If no results appeared try appending the domain to 'dig axfr @<TARGET-IP> <DOMAIN NAME>' command"
 			echo ""
 		fi
 	done
@@ -107,12 +118,12 @@ function dns
 
 #function wp
 #{
-		#echo "[*]Checking & Scanning WordPress"
+		#echo "${BLUE}[*]${ENDCOLOR}Checking & Scanning WordPress"
 		#wpscan  --url https://$host:443 --disable-tls-checks --no-banner --update -e u vp vt -o Results/wp-result-443 2>/dev/null
 		#wpscan  --url http://$host:80 --no-banner --update  -e u vp vt -o Results/wp-result-80 2>/dev/null
 		#wpscan  --url http://$host:8080 --no-banner --update  -e u vp vt -o Results/wp-result-8080 2>/dev/null
 		#echo "{+}If no plugins where detected make sure to run wpscan with '--plugins-detection aggressive' "
-		#echo "[*]Learn more : https://book.hacktricks.xyz/pentesting/pentesting-web#cms-scanners"
+		#echo "${BLUE}[*]${ENDCOLOR}Learn more : https://book.hacktricks.xyz/pentesting/pentesting-web#cms-scanners"
 		#echo "{+}D0ne!"
 		##cleaning 
 		#for i in {80,8080,443}
@@ -127,17 +138,17 @@ function dns
 
 function http   #Needs more work and optimization for defining https from https and cmsscanners
 {
-	echo "[*]testing WordPress"
+	echo -e "${BLUE}[*]${ENDCOLOR}testing WordPress"
 	q=$(cat Results/ports)
 	for x in $q
 	do
 		if [[ "$x" == "80" || "$x" == "8080" ]]
 		then
-			echo "[*]WhatWeb Port --> $x"
+			echo -e "${BLUE}[*]${ENDCOLOR}WhatWeb Port --> ${RED}$x${ENDCOLOR}"
 			whatweb $host:$x
 			wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
 		elif [[ "$x" == "443" ]]; then
-			echo "[*]WhatWeb Port --> $x"
+			echo -e "${BLUE}[*]${ENDCOLOR}WhatWeb Port --> ${RED}$x${ENDCOLOR}"
 			whatweb $host:$x
 			wpscan  --url https://$host:$x --disable-tls-checks --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
 		fi
@@ -150,17 +161,17 @@ function smb     #ADD if condition so if the null byte didnt work dont do nmap
 	for i in $q
 	do
 		if [[ "$i" == "445" ]]; then
-			echo "[*]Enumerating SMB [NULL-SESSION]"
-			echo "[*]Using CRACKMAPEXEC..."
+			echo -e "${BLUE}[*]${ENDCOLOR}Enumerating SMB [NULL-SESSION]"
+			echo -e "${BLUE}[*]${ENDCOLOR}Using CRACKMAPEXEC..."
 			crackmapexec smb $host -u "" -p "" --shares
 			echo ""
-			echo "[*]Using SMBCLIENT..."
+			echo -e "${BLUE}[*]${ENDCOLOR}Using SMBCLIENT..."
 			smbmap -H $host -r
 			echo ""
-			echo "[*]Using NMAP to enum share paths"
-			echo -n '[+]'
+			echo -e "${BLUE}[*]${ENDCOLOR}Using NMAP to enum share paths"
+			echo -e -n '${BLUE}[*]${ENDCOLOR}'
 			nmap -Pn -p445 -T5 --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
-			echo""
+			echo ""
 			break
 		fi
 
@@ -173,15 +184,14 @@ function nfs
 	for i in $s
 	do
 		if [[ "$i" == "2049" ]]; then
-			echo "[*]Enumerating NFS..."
+			echo -e "${BLUE}[*]${ENDCOLOR}Enumerating NFS..."
 			w=$(showmount -e $host | grep "/")
-			echo "[+]You can mount --> $w"
-			echo "[*]Attempting to mount it on --> '/tmp/1'"
+			echo -e "${YELLOW}[+]${ENDCOLOR}You can mount --> ${FYELLOW}$w${ENDCOLOR}"
+			echo "${BLUE}[*]${ENDCOLOR}Attempting to mount it on --> ${FYELLOW}/tmp/1${ENDCOLOR}"
 			q=$(showmount -e $host | grep "/" | cut -d " " -f1)
 			mkdir /tmp/1 2>/dev/null
 			sudo mount -t nfs $host:$q /tmp/1
-			echo "[+]Done! --> Check /tmp/1"
-			echo "[*]Learn more : https://book.hacktricks.xyz/pentesting/nfs-service-pentesting"
+			echo -e "{YELLOW}[+]${ENDCOLOR}Done! --> Check ${FYELLOW}/tmp/1${ENDCOLOR}"
 			echo ""
 		fi
 	done
@@ -189,14 +199,14 @@ function nfs
 
 function Dirbusting #Directory Bruteforcing
 {
-	echo "[*]Dirbusting in the background"
+	echo -e "${BLUE}[*]${ENDCOLOR}Dirbusting in the background"
 
 	if [[ "$d" == "http" ]]
 			then
-			feroxbuster -u http://$host:$p $x -d 2 -q -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt > f4;rm f4  # testing on it"
+			feroxbuster -u http://$host:$p $x -d 1 -q -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt > Results/ignore;rm Results/ignore  # testing on it"
 	elif [[ "$d" == "https" ]]
 		then
-			feroxbuster -u https://$host:$p $x -d 2 -q -k -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt  > f5;rm f5
+			feroxbuster -u https://$host:$p $x -d 1  -q -k -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt  > Results/ignore;rm Results/ignore
 	fi
 }
 
@@ -204,9 +214,10 @@ function Dirbusting #Directory Bruteforcing
 if [[ "$1" == "" ]]
 then
 	usage
-elif [[ "$1" != "-u" ]]
+elif [[ "$1" != "-u" && "$1" != "-h" ]]
 	then
-		echo "********ERROR! EXPECTED '-u' TO BE THE FIRST ARGUMENT"
+		echo -e "${RED}Expected '-u' to be the first argument${ENDCOLOR}"
+		echo ""
 fi
 
 while getopts ":u:p:d:x:a:c:h" arg 
@@ -238,6 +249,7 @@ do
 		nfs $host
 		pop3 $host $p
 		smb $host
+		http $host $p
 		#http $host $p
 	elif [[ "$a" == "nmap" ]]; then
 		full_ps $host
@@ -251,8 +263,8 @@ do
 		pop3 $host $p
 	elif [[ "$a" == "smtp" ]]; then
 		smtp $host $p
-	elif [[ "$a" == "wp" ]]; then
-		wp $host $p
+	elif [[ "$a" == "http" ]]; then
+		http $host $p
 
 	fi
 	;;
