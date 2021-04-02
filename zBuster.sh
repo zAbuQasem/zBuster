@@ -5,9 +5,7 @@
 #2-rustscan to pipe results to nmap
 #3-feroxbuster for dirbusting   #i added new file extentions in its config file
 #4-wpscan
-#5-cmsmap  #consider adding it to the /usr/bin/ for the clients
 #6-crackmapexec
-#7-nfs-ls
 
 mkdir Results 2>/dev/null
 
@@ -19,7 +17,6 @@ function usage
 	echo "-p         Specify a Port number."
 	echo "-d         For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>"
 	echo "-x         For providing extentions for Dirbusting example : -x php  OR -x php,txt"
-	echo "-w         Specify a wordlist"
 	echo "-a         To specifiy what to scan"
 	echo "           Available OPTIONS : NMAP (full port scan)| SMTP | DNS | <port80> | POP3 | IMAP | SMB | NFS"  #specify for port 80
 	echo "-a all     To scan everything! <except dirbusting> //RECOMMENDED"
@@ -52,10 +49,12 @@ function full_ps #FUll portscan + All checks
 	echo "[*]Enumerating open ports..."
 	n=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > catted ; cat catted)
 	echo -n "[+]"
+	rm catted
 	nmap -Pn -A -p$n -T5 $host -oN Results/nmap-result > file ; rm file
+	echo "[*]Doing Nmap-Vuln scan ..."
+	echo -n "[*]"
 	nmap -Pn -p$n -T5 --script vuln $host -oN Results/nmapVuln-result > file ; rm file
 	echo "[+]Done! check --> 'Results/nmap-result  &&  Results/nmapVuln-result"
-	rm catted
 	echo ""
 	#cat Results/nmap-result
 
@@ -68,7 +67,7 @@ function smtp
 	do
 		if [[ "$i" == "25" ]]; then
 			echo "[*]Enumerating SMTP (users)..."
-			sleep 1.5 ; echo -n "[+]"
+			echo -n "[*]"
 			nmap -Pn -T5 --script smtp-enum-users $host
 			echo "[*]Learn more: https://book.hacktricks.xyz/pentesting/pentesting-smtp"
 		fi
@@ -84,23 +83,11 @@ function pop3
 	do
 		if [[ "$i" == "110" ]]; then
 			echo "[*]Enumerating POP3 capabilties ..."
-			sleep 1.5 ; echo -n "[+]"
+			echo -n "[*]"
 			nmap -Pn -T5 --script pop3-capabilities -sV $host #All are default scripts
 		fi
 	done
 }
-#
-#function imap
-#{
-#
-#}
-
-#function irc 
-#{
-#	
-#}
-
-#function redis
 
 function dns
 {
@@ -138,7 +125,7 @@ function dns
 		#done
 #}
 
-function wp-test
+function http   #Needs more work and optimization for defining https from https and cmsscanners
 {
 	echo "[*]testing WordPress"
 	q=$(cat Results/ports)
@@ -146,17 +133,23 @@ function wp-test
 	do
 		if [[ "$x" == "80" || "$x" == "8080" ]]
 		then
-			wpscan  --url http://$host: --no-banner --update  -e u vp vt -o Results/wp-result-80 2>/dev/null
+			echo "[*]WhatWeb Port --> $x"
+			whatweb $host:$x
+			wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
+		elif [[ "$x" == "443" ]]; then
+			echo "[*]WhatWeb Port --> $x"
+			whatweb $host:$x
+			wpscan  --url https://$host:$x --disable-tls-checks --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
 		fi
 	done
 }
 
-function smb
+function smb     #ADD if condition so if the null byte didnt work dont do nmap
 {
 	q=$(cat Results/ports)
 	for i in $q
 	do
-		if [[ "$i" == "139" || "445" ]]; then
+		if [[ "$i" == "445" ]]; then
 			echo "[*]Enumerating SMB [NULL-SESSION]"
 			echo "[*]Using CRACKMAPEXEC..."
 			crackmapexec smb $host -u "" -p "" --shares
@@ -164,7 +157,7 @@ function smb
 			echo "[*]Using SMBCLIENT..."
 			smbmap -H $host -r
 			echo ""
-			echo "[*]Enumerating shares with NMAP"
+			echo "[*]Using NMAP to enum share paths"
 			echo -n '[+]'
 			nmap -Pn -p445 -T5 --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
 			echo""
@@ -200,7 +193,7 @@ function Dirbusting #Directory Bruteforcing
 
 	if [[ "$d" == "http" ]]
 			then
-			feroxbuster -u http://$host:$p $x -d 2 -q -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt #> f4;rm f4  # testing on it"
+			feroxbuster -u http://$host:$p $x -d 2 -q -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt > f4;rm f4  # testing on it"
 	elif [[ "$d" == "https" ]]
 		then
 			feroxbuster -u https://$host:$p $x -d 2 -q -k -o Results/bust-$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt  > f5;rm f5
@@ -216,7 +209,7 @@ elif [[ "$1" != "-u" ]]
 		echo "********ERROR! EXPECTED '-u' TO BE THE FIRST ARGUMENT"
 fi
 
-while getopts ":u:w:p:d:x:a:h" arg  # w for wordlists to add in the future
+while getopts ":u:p:d:x:a:c:h" arg 
 do
 	case $arg in
 	u)
@@ -242,12 +235,10 @@ do
 		full_ps $host
 		smtp $host $p
 		dns $host
-		#wp $host
 		nfs $host
-		#imap $host $p
 		pop3 $host $p
 		smb $host
-		#irc $host
+		wp $host $p
 	elif [[ "$a" == "nmap" ]]; then
 		full_ps $host
 	elif [[ "$a" == "smb" ]]; then
@@ -256,16 +247,12 @@ do
 		nfs $host
 	elif [[ "$a" == "dns" ]]; then
 		dns $host
-	elif [[ "$a" == "imap" ]]; then
-		imap $host $p
 	elif [[ "$a" == "pop3" ]]; then
 		pop3 $host $p
-	elif [[ "smtp" ]]; then
+	elif [[ "$a" == "smtp" ]]; then
 		smtp $host $p
 	elif [[ "$a" == "wp" ]]; then
-		wp $host
-	elif [[ "$a" == "irc" ]]; then
-		irc $host
+		wp $host $p
 
 	fi
 	;;
@@ -316,4 +303,4 @@ done
 #3-added shell shocker hunter
 #4-webdav test
 #5-add what web
-#redis
+#redisal
