@@ -11,7 +11,6 @@ FYELLOW="\e[103m"
 LIGHTGREEN="\e[92m"
 CYAN="\e[35m"
 
-
 mkdir Results 2>/dev/null
 
 function usage
@@ -90,6 +89,7 @@ function pop3
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating POP3 capabilties...${ENDCOLOR}"
 			echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			nmap -Pn -p110 --script pop3-capabilities -sV $host #All are default scripts
+			echo ""
 		fi
 	done
 }
@@ -146,24 +146,28 @@ function http   #Needs more work and optimization for defining https from https 
 	done
 }
 
-function smb     #ADD if condition so if the null byte didnt work dont do nmap
+function smb
 {
 	q=$(cat Results/ports)
 	for i in $q
 	do
 		if [[ "$i" == "445" ]]; then
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMB [NULL-SESSION]${ENDCOLOR}"
-			echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using CRACKMAPEXEC...${ENDCOLOR}"
-			crackmapexec smb $host -u "" -p "" --shares
-			echo ""
-			echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using SMBCLIENT...${ENDCOLOR}"
-			smbmap -H $host -r
-			echo ""
-			echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using NMAP to Enum share paths...${ENDCOLOR}"
-			echo -e -n "${BLUE}[*]${ENDCOLOR}"
-			nmap -Pn -p445 --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
-			echo ""
-			break
+			test=$(crackmapexec smb $host -u "" -p "" --shares)
+			if [[ "$test" == "" ]]; then
+				echo -e "${RED}[+]Cannot login with NULL-SESSION${ENDCOLOR}"
+			else
+				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using CRACKMAPEXEC...${ENDCOLOR}"
+				crackmapexec smb $host -u "" -p "" --shares
+				echo ""
+				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using SMBCLIENT...${ENDCOLOR}"
+				smbmap -H $host -r
+				echo ""
+				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using NMAP to Enum share paths...${ENDCOLOR}"
+				echo -e -n "${BLUE}[*]${ENDCOLOR}"
+				nmap -Pn -p445 --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
+				echo""
+			fi
 		fi
 
 	done
@@ -305,3 +309,7 @@ do
     ;;
 	esac
 done
+
+#remove portfile after new run
+#add banner
+#smb 
