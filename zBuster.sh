@@ -22,7 +22,7 @@ function usage
 	echo -e "-d         ${CYAN}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
 	echo -e "-x         ${CYAN}For providing extentions for Dirbusting example : -x php  OR -x .php,.txt${ENDCOLOR}"
 	echo -e "-a         ${CYAN}To specifiy what to scan${ENDCOLOR}"
-	echo -e "           ${CYAN}Available OPTIONS : NMAP (full port scan)| SMTP | DNS | <port80> | POP3 | IMAP | SMB | NFS${ENDCOLOR}"  #specify for port 80
+	echo -e "           ${CYAN}Available OPTIONS : NMAP (full port scan)| SMTP | DNS | HTTP | POP3 | IMAP | SMB | NFS${ENDCOLOR}"
 	echo -e "-a all     ${CYAN}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
 	echo " "
 	echo "USAGE EXAMPLES:"  					#///ADD more examples
@@ -43,7 +43,7 @@ function portcheck
 	s=$(cat Results/ports)
 	for i in $s
 	do
-		echo -e "${BLUE}[+]${ENDCOLOR}${YELLOW}${GREEN}Found Port${ENDCOLOR}${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
+		echo -e "${BLUE}[+]${ENDCOLOR}${GREEN}Found Port${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
 	done
 	echo ""
 }
@@ -197,9 +197,11 @@ function Dirbusting #Directory Bruteforcing
 	if [[ "$d" == "http" ]]
 			then
 			gobuster dir -u http://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}"
 	elif [[ "$d" == "https" ]]
 		then
 			gobuster dir -u https://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -k -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}" 
 	fi
 }
 
@@ -241,7 +243,7 @@ do
     a)
 	a=${OPTARG}
 	if [[ "$a" == "all" ]]; then
-		#full_ps $host
+		full_ps $host
 		smtp $host $p
 		dns $host
 		nfs $host
