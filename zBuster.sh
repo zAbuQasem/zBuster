@@ -220,9 +220,14 @@ do
 	case $arg in
 	u)
 	host=${OPTARG}  #to save the value of the arg to it
-	#echo "TARGET-IP : $host"
+	echo ""
+	echo -e "                                  ${YELLOW}~[*]Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}${YELLOW}[*]~${ENDCOLOR}"
+	echo ""
 	c=$(cat Results/ports 2>/dev/null)
 	if [[ "$c" == "" ]]; then
+		portcheck $host
+	else
+		rm Results/ports 2>/dev/null
 		portcheck $host
 	fi
 	;;
@@ -245,28 +250,28 @@ do
 		pop3 $host $p
 		smb $host
 		http $host $p
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$a" == "nmap" ]]; then
 		full_ps $host
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$a" == "smb" ]]; then
 		smb $host
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "nfs" ]]; then
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+	elif [[ "$a" == "nfs" ]]; then    
 		nfs $host
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$a" == "dns" ]]; then
 		dns $host
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$a" == "pop3" ]]; then
 		pop3 $host $p  
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "smtp" ]]; then
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+	elif [[ "$a" == "smtp" ]]; then  
 		smtp $host $p
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$a" == "http" ]]; then
 		http $host $p
-		echo -e "                                       ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
+		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 
 	fi
 	;;
@@ -310,6 +315,4 @@ do
 	esac
 done
 
-#remove portfile after new run
 #add banner
-#smb 
