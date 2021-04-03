@@ -57,11 +57,8 @@ function full_ps #FUll portscan + All checks
 	nmap -Pn -A -p$n -T5 $host -oN Results/nmap-result > file ; rm file
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Doing Nmap-Vuln scan...${ENDCOLOR}"
 	echo -e -n "${BLUE}[*]${ENDCOLOR}"
-	#nmap -Pn -p$n -T5 --script vuln $host -oN Results/nmapVuln-result > file ; rm file
 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR} &&  ${YELLOW}Results/nmapVuln-result${ENDCOLOR}"
 	echo ""
-	#cat Results/nmap-result
-
 }
 
 function smtp
@@ -102,7 +99,7 @@ function dns
 		if [[ "$i" == "53" ]]; then
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running a DNS Zone Transfer...${ENDCOLOR}"
 			dig axfr @$host
-			echo -e "${RED}[+]${ENDCOLOR}${RED}If no results appeared try -> ${ENDCOLOR} ${YELLOW}dig axfr @<TARGET-IP> <DOMAIN NAME>${ENDCOLOR}"
+			echo -e "${RED}[+]${ENDCOLOR}${RED}If no results appeared try --> ${ENDCOLOR} ${YELLOW}dig axfr @<TARGET-IP> <DOMAIN NAME>${ENDCOLOR}"
 			echo ""
 		fi
 	done
@@ -156,6 +153,7 @@ function smb
 			test=$(crackmapexec smb $host -u "" -p "" --shares)
 			if [[ "$test" == "" ]]; then
 				echo -e "${RED}[+]Cannot login with NULL-SESSION${ENDCOLOR}"
+				echo ""
 			else
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using CRACKMAPEXEC...${ENDCOLOR}"
 				crackmapexec smb $host -u "" -p "" --shares
@@ -182,7 +180,7 @@ function nfs
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating NFS...${ENDCOLOR}"
 			w=$(showmount -e $host | grep "/")
 			echo -e "${YELLOW}[+]${ENDCOLOR}You can mount --> ${RED}$w${ENDCOLOR}"
-			echo -e "${BLUE}[*]${ENDCOLOR}Attempting to mount it on --> ${YELLOW}/tmp/1${ENDCOLOR}"
+			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Attempting to mount it on --> ${ENDCOLOR}${YELLOW}/tmp/1${ENDCOLOR}"
 			q=$(showmount -e $host | grep "/" | cut -d " " -f1)
 			mkdir /tmp/1 2>/dev/null
 			sudo mount -t nfs $host:$q /tmp/1
@@ -314,5 +312,4 @@ do
     ;;
 	esac
 done
-
 #add banner
