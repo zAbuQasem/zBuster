@@ -119,7 +119,8 @@ function http   #Needs more work and optimization for defining https from https 
 			echo "" >> Results/wp-result-$x
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$x
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
-			if [[ "$clean" == "down" ]]; then
+			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
+			if [[ "$clean" == "down" || "$clean2"  == "up" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
@@ -131,7 +132,8 @@ function http   #Needs more work and optimization for defining https from https 
 			echo "" >> Results/wp-result-$x
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive' option" >> Results/wp-result-$x
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
-			if [[ "$clean" == "down" ]]; then
+			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
+			if [[ "$clean" == "down" || "$clean2"  == "up" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
@@ -197,11 +199,9 @@ function Dirbusting #Directory Bruteforcing
 	if [[ "$d" == "http" ]]
 			then
 			gobuster dir -u http://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}"
 	elif [[ "$d" == "https" ]]
 		then
 			gobuster dir -u https://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -k -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}" 
 	fi
 }
 
@@ -221,14 +221,21 @@ do
 	u)
 	host=${OPTARG}  #to save the value of the arg to it
 	echo ""
-	echo -e "                                  ${YELLOW}~[*]Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}${YELLOW}[*]~${ENDCOLOR}"
+	echo -e "                                   ${YELLOW}~[*]Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}${YELLOW}[*]~${ENDCOLOR}"
 	echo ""
 	c=$(cat Results/ports 2>/dev/null)
 	if [[ "$c" == "" ]]; then
 		portcheck $host
-	else
-		rm Results/ports 2>/dev/null
-		portcheck $host
+	elif [[ "$c" != "" ]]; then
+		echo -e -n "${RED}[*]Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
+		read ans
+		if [[ "$ans" == "y" ]]; then
+			rm Results/ports 2>/dev/null
+			echo ""
+			portcheck $host
+		else
+			echo ""
+		fi
 	fi
 	;;
 
@@ -281,13 +288,15 @@ do
 		then
 			d=${OPTARG}
 			Dirbusting $d $host $p $x &
-			sleep 3
+			sleep 2
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}"
 				
 		elif [[ "${OPTARG}" == "https" ]]
 			then
 				d=${OPTARG}
 				Dirbusting $d $host $p $x &
-				sleep 3
+				sleep 2
+				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}"
 		
 		else
 			echo "INVALID VALUE -> '${OPTARG}'"
