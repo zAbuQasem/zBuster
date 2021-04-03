@@ -20,15 +20,15 @@ function usage
 	echo -e "-u         ${CYAN}Mandatory to provide TARGET-IP${ENDCOLOR}"
 	echo -e "-p         ${CYAN}Specify a Port number.${ENDCOLOR}"
 	echo -e "-d         ${CYAN}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
-	echo -e "-x         ${CYAN}For providing extentions for Dirbusting example : -x php  OR -x php,txt${ENDCOLOR}"
+	echo -e "-x         ${CYAN}For providing extentions for Dirbusting example : -x php  OR -x .php,.txt${ENDCOLOR}"
 	echo -e "-a         ${CYAN}To specifiy what to scan${ENDCOLOR}"
 	echo -e "           ${CYAN}Available OPTIONS : NMAP (full port scan)| SMTP | DNS | <port80> | POP3 | IMAP | SMB | NFS${ENDCOLOR}"  #specify for port 80
 	echo -e "-a all     ${CYAN}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
 	echo " "
 	echo "USAGE EXAMPLES:"  					#///ADD more examples
 	echo -e  " ${LIGHTGREEN} $0 -u <TARGET-IP> OPTIONS... ${ENDCOLOR}"
-	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 80 -x php -d http ${ENDCOLOR}"
-	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 443 -x php,txt -d https${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 80 -x .php -d http ${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 443 -x .php,.txt -d https${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a all${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a nfs${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a{nfs,pop3,smb} ${ENDCOLOR} ${RED}//To Scan Multiple Services${ENDCOLOR}"
@@ -150,7 +150,7 @@ function smb
 	do
 		if [[ "$i" == "445" ]]; then
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMB [NULL-SESSION]${ENDCOLOR}"
-			test=$(crackmapexec smb $host -u "" -p "" --shares)
+			test=$(crackmapexec smb $host -u "" -p "" --shares 2>/dev/null)
 			if [[ "$test" == "" ]]; then
 				echo -e "${RED}[+]Cannot login with NULL-SESSION${ENDCOLOR}"
 				echo ""
@@ -192,14 +192,14 @@ function nfs
 
 function Dirbusting #Directory Bruteforcing
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}Dirbusting in the background"
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting in the background${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
 
 	if [[ "$d" == "http" ]]
 			then
-			dirb http://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -o Results/bust-$p > Results/ignore;rm Results/ignore
+			gobuster dir -u http://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
 	elif [[ "$d" == "https" ]]
 		then
-			dirb https://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -o Results/bust-$p > Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -k -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
 	fi
 }
 
