@@ -139,7 +139,8 @@ function http   #Needs more work and optimization for defining https from https 
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$x
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
 			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
-			if [[ "$clean" == "down" || "$clean2"  == "up" ]]; then
+			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
+			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
@@ -152,7 +153,8 @@ function http   #Needs more work and optimization for defining https from https 
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive' option" >> Results/wp-result-$x
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
 			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
-			if [[ "$clean" == "down" || "$clean2"  == "up" ]]; then
+			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
+			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
@@ -212,7 +214,8 @@ function nfs
 }
 function vhosts
 {
-	gobuster vhost http://$host$p -w /usr/share/SecLists-master/Discovery/DNS/subdomains-top1million-110000.txt -q -z -e -o Results/bust-vhosts-$p > Results/ignore;rm Results/ignore
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating vhosts in the background${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	gobuster vhost -u http://$host$p -w /usr/share/SecLists-master/Discovery/DNS/subdomains-top1million-110000.txt -t 40 -q -z -o Results/bust-vhosts$p > Results/ignore;rm Results/ignore
 }
 
 function Dirbusting #Directory Bruteforcing
@@ -221,10 +224,10 @@ function Dirbusting #Directory Bruteforcing
 
 	if [[ "$d" == "http" ]]
 			then
-			gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
+			gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -q -z -o Results/bust$p > Results/ignore;rm Results/ignore
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -k -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -k -q -z -o Results/bust$p > Results/ignore;rm Results/ignore
 	fi
 }
 
@@ -238,7 +241,7 @@ elif [[ "$1" != "-u" && "$1" != "-h" ]]
 		echo ""
 fi
 
-while getopts ":u:p:d:x:a:c:h" arg 
+while getopts ":u:p:d:x:a:c:vh" arg 
 do
 	case $arg in
 	u)
@@ -312,14 +315,14 @@ do
 			d=${OPTARG}
 			Dirbusting $d $host $p $x &
 			sleep 2
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}"
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
 				
 		elif [[ "${OPTARG}" == "https" ]]
 			then
 				d=${OPTARG}
 				Dirbusting $d $host $p $x &
 				sleep 2
-				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-$p${ENDCOLOR}"
+				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
 		
 		else
 			echo "INVALID VALUE -> '${OPTARG}'"
@@ -327,6 +330,12 @@ do
 			usage
 	fi
     ;;
+
+    v)
+	vhosts $host $p &
+	sleep 2
+	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust-vhosts$p${ENDCOLOR}"
+	;;
 
     h)
 	usage
@@ -347,7 +356,6 @@ do
 	esac
 done
 #redis
-#vulnscan nmap at the end
 #see a fix to the portscan files when dirbusting
 #memcached-info
 #memcached-tool
