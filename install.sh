@@ -12,4 +12,6 @@ else
 	crackmapexec
 	#for nfs
 	apt install nfs-common
+	#memcache
+	apt install libmemcached-tools
 fi
