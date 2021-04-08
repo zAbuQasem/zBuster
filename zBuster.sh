@@ -11,11 +11,19 @@ FYELLOW="\e[103m"
 LIGHTGREEN="\e[92m"
 CYAN="\e[35m"
 
+line=$(for i in {1..120};do printf '-' ;done)
+
 mkdir Results 2>/dev/null
+echo "     ____            _            "
+echo " ___| __ ) _   _ ___| |_ ___ _ __ "
+echo "|_  /  _ \| | | / __| __/ _ \ '__|"
+echo " / /| |_) | |_| \__ \ ||  __/ |   "
+echo "/___|____/ \__,_|___/\__\___|_|  v 1.0 "
+echo ""
 
 function usage
 {
-	echo -e "                       ${BLUE}[*]${ENDCOLOR}${GRAY}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	echo -e "                      ${BLUE}[*]${ENDCOLOR}${GRAY}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
 	echo -e "${GRAY}OPTIONS:${ENDCOLOR}"
 	echo -e "-u         ${CYAN}Mandatory to provide TARGET-IP${ENDCOLOR}"
 	echo -e "-p         ${CYAN}Specify a Port number.${ENDCOLOR}"
@@ -51,13 +59,12 @@ function portcheck
 function full_ps #FUll portscan + All checks
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating open ports...${ENDCOLOR}"
-	n=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > catted ; cat catted)
+	ports=$(nmap -p- --min-rate=1000 -T4 $host | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
 	echo -e  -n "${BLUE}[+]${ENDCOLOR}"
-	rm catted
-	nmap -Pn -A -p$n -T5 $host -oN Results/nmap-result > file ; rm file
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Doing Nmap-Vuln scan...${ENDCOLOR}"
-	echo -e -n "${BLUE}[*]${ENDCOLOR}"
-	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR} &&  ${YELLOW}Results/nmapVuln-result${ENDCOLOR}"
+	nmap -Pn -A -p$ports -T5 $host -oN Results/nmap-result > file ; rm file
+	#echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Doing Nmap-Vuln scan...${ENDCOLOR}"  vulnscan
+	#echo -e -n "${BLUE}[*]${ENDCOLOR}"
+	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 	echo ""
 }
 
@@ -67,9 +74,17 @@ function smtp
 	for i in $q
 	do
 		if [[ "$i" == "25" ]]; then
-			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMTP[USERS]...${ENDCOLOR}"
+			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMTP[USERS & COMMANDS]...${ENDCOLOR}"
 			echo -e -n "${BLUE}[*]${ENDCOLOR}"
-			nmap -Pn -p25 --script smtp-enum-users $host
+			echo -e "\n$line" >> Results/nmap-result
+			echo "                                  [+]SMTP USER RESULT" >> Results/nmap-result
+			echo -e "$line" >> Results/nmap-result  #design
+			nmap -Pn -p25 --script smtp-enum-users $host >> Results/nmap-result
+			echo -e "\n$line" >> Results/nmap-result  #design
+			echo "                                  [+]SMTP COMMANDS RESULT" >> Results/nmap-result
+			echo -e "$line" >> Results/nmap-result
+			nmap -p25 --script smtp-commands $host >> Results/nmap-result
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 			echo ""
 		fi
 	done
@@ -85,7 +100,11 @@ function pop3
 		if [[ "$i" == "110" ]]; then
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating POP3 capabilties...${ENDCOLOR}"
 			echo -e -n "${BLUE}[*]${ENDCOLOR}"
-			nmap -Pn -p110 --script pop3-capabilities -sV $host #All are default scripts
+			echo -e "\n$line" >> Results/nmap-result >> Results/nmap-result
+			echo "                                  [+]POP3 CAPABILITIES RESULT" >> Results/nmap-result
+			echo -e "$line" >> Results/nmap-result  #design
+			nmap -Pn -p110 --script pop3-capabilities -sV $host >> Results/nmap-result
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 			echo ""
 		fi
 	done
@@ -191,6 +210,10 @@ function nfs
 		fi
 	done
 }
+function vhosts
+{
+	gobuster vhost http://$host$p -w /usr/share/SecLists-master/Discovery/DNS/subdomains-top1million-110000.txt -q -z -e -o Results/bust-vhosts-$p > Results/ignore;rm Results/ignore
+}
 
 function Dirbusting #Directory Bruteforcing
 {
@@ -198,10 +221,10 @@ function Dirbusting #Directory Bruteforcing
 
 	if [[ "$d" == "http" ]]
 			then
-			gobuster dir -u http://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
+			gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host:$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -k -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -k -q -z -e -o Results/bust-$p > Results/ignore;rm Results/ignore
 	fi
 }
 
@@ -221,7 +244,7 @@ do
 	u)
 	host=${OPTARG}  #to save the value of the arg to it
 	echo ""
-	echo -e "                                   ${YELLOW}~[*]Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}${YELLOW}[*]~${ENDCOLOR}"
+	echo -e "${YELLOW}[*]${ENDCOLOR}Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}"
 	echo ""
 	c=$(cat Results/ports 2>/dev/null)
 	if [[ "$c" == "" ]]; then
@@ -240,7 +263,7 @@ do
 	;;
 
 	p)
-    p=${OPTARG}
+    p=":${OPTARG}"
     ;;
 
     x)
@@ -251,7 +274,7 @@ do
 	a=${OPTARG}
 	if [[ "$a" == "all" ]]; then
 		full_ps $host
-		smtp $host $p
+		smtp $host $p $line
 		dns $host
 		nfs $host
 		pop3 $host $p
@@ -323,4 +346,12 @@ do
     ;;
 	esac
 done
-#add banner
+#redis
+#vulnscan nmap at the end
+#see a fix to the portscan files when dirbusting
+#memcached-info
+#memcached-tool
+#memcdump
+#memcat --servers=ip  <key>
+#make a python script to create revshells including msfvenome
+#sudo printf 10.10.10.188\\hms.htb >> /etc/hosts   important for parsing and adding vhosts or subdomains to /etc/hosts
