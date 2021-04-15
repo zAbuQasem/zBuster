@@ -59,9 +59,11 @@ function portcheck
 function full_ps #FUll portscan + All checks
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating open ports...${ENDCOLOR}"
-	ports=$(nmap -p- --min-rate=1000 -T4 $host | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
+	echo -e  -n "${BLUE}[+]${ENDCOLOR}" 
+	nmap -Pn -p- --min-rate=1000 -T4 $host | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> Results/ports
+	ports=$(cat Results/ports | tr "," "\n" | sort -u | uniq | tr '\n' ',' | sed s/,$// > ppp ;cp ppp Results/ports; rm ppp ;cat Results/ports)
 	echo -e  -n "${BLUE}[+]${ENDCOLOR}"
-	nmap -Pn -A -p$ports -T5 $host -oN Results/nmap-result > file ; rm file
+	sudo nmap -Pn -O -A -p$ports -T5 $host -oN Results/nmap-result > file ; rm file
 	#echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Doing Nmap-Vuln scan...${ENDCOLOR}"  vulnscan
 	#echo -e -n "${BLUE}[*]${ENDCOLOR}"
 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> ${YELLOW}Results/nmap-result${ENDCOLOR}"
@@ -125,8 +127,7 @@ function dns
 			
 }
 
-
-function http   #Needs more work and optimization for defining https from https and cmsscanners
+function wordpress
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Testing WordPress ${ENDCOLOR}${RED}[If Available]${ENDCOLOR}"
 	q=$(cat Results/ports)
@@ -140,7 +141,8 @@ function http   #Needs more work and optimization for defining https from https 
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
 			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
 			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
-			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" ]]; then
+			clean4=$(cat Results/wp-result-$x 2>/dev/null)
+			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" || "clean4" == "" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
@@ -154,7 +156,7 @@ function http   #Needs more work and optimization for defining https from https 
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
 			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
 			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
-			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" ]]; then
+			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" || "clean4" == "" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
@@ -163,6 +165,18 @@ function http   #Needs more work and optimization for defining https from https 
 
 		fi
 
+	done
+
+}
+
+function http   #Needs more work and optimization for defining https from https and cmsscanners
+{
+	q=$(cat Results/ports)
+	for i in $q :
+	do
+		if [[ "i" == "80" || "i" == "8080" || "i" == "443" ]]; then
+			wordpress $host $p
+		fi
 	done
 }
 
@@ -193,6 +207,18 @@ function smb
 
 	done
 }
+
+function memcached
+{
+	echo hello
+}
+
+function redis
+{
+	echo hello
+
+}
+
 
 function nfs
 {
@@ -361,5 +387,4 @@ done
 #memcached-tool
 #memcdump
 #memcat --servers=ip  <key>
-#make a python script to create revshells including msfvenome
-#sudo printf 10.10.10.188\\hms.htb >> /etc/hosts   important for parsing and adding vhosts or subdomains to /etc/hosts
+#for wpscan use gre to grep http from porscan  #cat  nmap-result | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1
