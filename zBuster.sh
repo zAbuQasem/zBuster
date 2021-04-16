@@ -14,12 +14,9 @@ CYAN="\e[35m"
 line=$(for i in {1..120};do printf '-' ;done)
 
 mkdir Results 2>/dev/null
-echo "     ____            _            "
-echo " ___| __ ) _   _ ___| |_ ___ _ __ "
-echo "|_  /  _ \| | | / __| __/ _ \ '__|"
-echo " / /| |_) | |_| \__ \ ||  __/ |   "
-echo "/___|____/ \__,_|___/\__\___|_|  v 1.0 "
-echo ""
+                                                     
+
+
 
 function usage
 {
@@ -47,21 +44,24 @@ function portcheck
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running an initial portscan...${ENDCOLOR}"
 	portsnmap=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > portsfromrust ; cat portsfromrust)
-	cat portsfromrust | tr "," "\n" > Results/ports ; rm portsfromrust  #here is created a file containing the ports
-	s=$(cat Results/ports)
+	cat portsfromrust | tr "," "\n" > /tmp/ports ; rm portsfromrust  #here is created a file containing the ports
+	echo -e  -n "${BLUE}[+]${ENDCOLOR}" 
+	nmap -Pn -p- --min-rate=1000 $host >> /tmp/portsforservices
+	cat /tmp/portsforservices | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> /tmp/ports ;rm portsfromnmap 2>/dev/null
+	cat /tmp/ports | tr "," "\n" | sort -u | uniq > ppp ;cp ppp /tmp/ports; rm ppp
+	s=$(cat /tmp/ports)
 	for i in $s
 	do
 		echo -e "${BLUE}[+]${ENDCOLOR}${GREEN}Found Port${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
 	done
-	echo ""
+	echo "" 
 }
 
 function full_ps #FUll portscan + All checks
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating open ports...${ENDCOLOR}"
-	echo -e  -n "${BLUE}[+]${ENDCOLOR}" 
-	nmap -Pn -p- --min-rate=1000 -T4 $host | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> Results/ports
-	ports=$(cat Results/ports | tr "," "\n" | sort -u | uniq | tr '\n' ',' | sed s/,$// > ppp ;cp ppp Results/ports; rm ppp ;cat Results/ports)
+	ports=$( cat /tmp/ports)
+	ports=$( echo  -n $ports | tr " " "," )
 	echo -e  -n "${BLUE}[+]${ENDCOLOR}"
 	sudo nmap -Pn -O -A -p$ports -T5 $host -oN Results/nmap-result > file ; rm file
 	#echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Doing Nmap-Vuln scan...${ENDCOLOR}"  vulnscan
@@ -72,7 +72,7 @@ function full_ps #FUll portscan + All checks
 
 function smtp
 {
-	q=$(cat Results/ports)
+	q=$(cat /tmp/ports)
 	for i in $q
 	do
 		if [[ "$i" == "25" ]]; then
@@ -96,7 +96,7 @@ function smtp
 
 function pop3
 {
-	q=$(cat Results/ports)
+	q=$(cat /tmp/ports)
 	for i in $q
 	do
 		if [[ "$i" == "110" ]]; then
@@ -114,7 +114,7 @@ function pop3
 
 function dns
 {
-	q=$(cat Results/ports)
+	q=$(cat /tmp/ports)
 	for i in $q
 	do
 		if [[ "$i" == "53" ]]; then
@@ -130,7 +130,7 @@ function dns
 function wordpress
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Testing WordPress ${ENDCOLOR}${RED}[If Available]${ENDCOLOR}"
-	q=$(cat Results/ports)
+	q=$(cat portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
 	for x in $q
 	do
 		if [[ "$x" == "80" || "$x" == "8080" ]]
@@ -171,7 +171,7 @@ function wordpress
 
 function http   #Needs more work and optimization for defining https from https and cmsscanners
 {
-	q=$(cat Results/ports)
+	q=$(cat /tmp/ports)
 	for i in $q :
 	do
 		if [[ "i" == "80" || "i" == "8080" || "i" == "443" ]]; then
@@ -182,14 +182,14 @@ function http   #Needs more work and optimization for defining https from https 
 
 function smb
 {
-	q=$(cat Results/ports)
+	q=$(cat /tmp/ports)
 	for i in $q
 	do
 		if [[ "$i" == "445" ]]; then
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMB [NULL-SESSION]${ENDCOLOR}"
 			test=$(crackmapexec smb $host -u "" -p "" --shares 2>/dev/null)
 			if [[ "$test" == "" ]]; then
-				echo -e "${RED}[+]Cannot login with NULL-SESSION${ENDCOLOR}"
+				echo -e "${RED}[!]Cannot login with NULL-SESSION${ENDCOLOR}"
 				echo ""
 			else
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using CRACKMAPEXEC...${ENDCOLOR}"
@@ -222,7 +222,7 @@ function redis
 
 function nfs
 {
-	s=$(cat Results/ports)
+	s=$(cat /tmp/ports)
 	for i in $s
 	do
 		if [[ "$i" == "2049" ]]; then
@@ -288,14 +288,14 @@ do
 	echo ""
 	echo -e "${YELLOW}[*]${ENDCOLOR}Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}"
 	echo ""
-	c=$(cat Results/ports 2>/dev/null)
+	c=$(cat /tmp/ports 2>/dev/null)
 	if [[ "$c" == "" ]]; then
 		portcheck $host
 	elif [[ "$c" != "" ]]; then
 		echo -e -n "${RED}[*]Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
 		read ans
 		if [[ "$ans" == "y" ]]; then
-			rm Results/ports 2>/dev/null
+			rm /tmp/ports 2>/dev/null
 			echo ""
 			portcheck $host
 		else
