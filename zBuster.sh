@@ -20,7 +20,8 @@ echo " _____ ____)  )_   _  ___ _| |_ _____  ____  "
 echo "(___  )  __  (| | | |/___|_   _) ___ |/ ___) "
 echo " / __/| |__)  ) |_| |___ | | |_| ____| |     "
 echo "(_____)______/|____/(___/   \__)_____)_|   v1.0 "
-echo "                                             "                                                     
+echo "                                             "     
+echo -e "${CYAN}Author:${ENDCOLOR} https://www.linkedin.com/in/zeyad-yahya-0985971b5/"                                                
 echo $line
 
 
@@ -34,7 +35,7 @@ function usage
 	echo -e "-d         			${GRAY}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
 	echo -e "-x         			${GRAY}For providing extentions for Dirbusting example : -x php  OR -x .php,.txt${ENDCOLOR}"
 	echo -e "-a         			${GRAY}To specifiy what to scan${ENDCOLOR}"
-	echo -e "           			${GRAY}Available OPTIONS : nmap (full port scan)| smtp | dns | http | pop3 | imap | smb | nfs${ENDCOLOR}"
+	echo -e "           			${GRAY}Available OPTIONS : nmap (full port scan)| smtp | dns | http | pop3 | smb | nfs${ENDCOLOR}"
 	echo -e "-a all     			${GRAY}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
 	echo " "
 	echo "USAGE EXAMPLES:"  					#///ADD more examples
@@ -44,8 +45,7 @@ function usage
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a all${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a nfs${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a{nfs,pop3,smb} ${ENDCOLOR} ${RED}//To Scan Multiple Services${ENDCOLOR}"
-	echo $line
-	echo $line
+	echo ""
 }
 
 function portcheck
@@ -60,7 +60,7 @@ function portcheck
 	s=$(cat /tmp/ports)
 	for i in $s
 	do
-		echo -e "${BLUE}[+]${ENDCOLOR}${GREEN}Found Port${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
+		echo -e "${BLUE}[+]${ENDCOLOR}${GRAY}Found Port${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
 	done
 	echo "" 
 }
