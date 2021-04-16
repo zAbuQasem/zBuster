@@ -231,9 +231,9 @@ function nfs
 			echo -e "${YELLOW}[+]${ENDCOLOR}You can mount --> ${RED}$w${ENDCOLOR}"
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Attempting to mount it on --> ${ENDCOLOR}${YELLOW}/tmp/1${ENDCOLOR}"
 			q=$(showmount -e $host | grep "/" | cut -d " " -f1)
-			mkdir /tmp/1 2>/dev/null
-			sudo mount -t nfs $host:$q /tmp/1
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! --> ${ENDCOLOR}Check ${YELLOW}/tmp/1${ENDCOLOR}"
+			mkdir /tmp/mount_point 2>/dev/null
+			sudo mount -t nfs $host:$q /tmp/mount_point
+			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! --> ${ENDCOLOR}Check ${YELLOW}/tmp/mount_point${ENDCOLOR}"
 			echo ""
 		fi
 	done
@@ -246,14 +246,27 @@ function vhosts
 
 function Dirbusting #Directory Bruteforcing
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting in the background${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting...${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
 
 	if [[ "$d" == "http" ]]
-			then
-			gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -q -z -o Results/bust$p > Results/ignore;rm Results/ignore
+	then
+	gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -q -z -o Results/bust$p 2>/dev/null #> Results/ignore;rm Results/ignore
+	b=$( cat Results/bust$p )
+		 if [[ "$b" == "" ]]; then
+		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
+		 else
+		 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
+		 fi
+
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -k -q -z -o Results/bust$p > Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -k -q -z -o Results/bust$p #> Results/ignore;rm Results/ignore
+			b=$( cat Results/bust$p )
+		 if [[ "$b" == "" ]]; then
+		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
+		 else
+		 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
+		 fi
 	fi
 }
 
@@ -341,14 +354,12 @@ do
 			d=${OPTARG}
 			Dirbusting $d $host $p $x &
 			sleep 2
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
 				
 		elif [[ "${OPTARG}" == "https" ]]
 			then
 				d=${OPTARG}
 				Dirbusting $d $host $p $x &
 				sleep 2
-				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
 		
 		else
 			echo "INVALID VALUE -> '${OPTARG}'"
