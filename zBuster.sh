@@ -14,21 +14,28 @@ CYAN="\e[35m"
 line=$(for i in {1..120};do printf '-' ;done)
 
 mkdir Results 2>/dev/null
-                                                     
-
+echo "       ______                                "
+echo "      (____  \              _                "
+echo " _____ ____)  )_   _  ___ _| |_ _____  ____  "
+echo "(___  )  __  (| | | |/___|_   _) ___ |/ ___) "
+echo " / __/| |__)  ) |_| |___ | | |_| ____| |     "
+echo "(_____)______/|____/(___/   \__)_____)_|   v1.0 "
+echo "                                             "                                                     
+echo $line
 
 
 function usage
 {
-	echo -e "                      ${BLUE}[*]${ENDCOLOR}${GRAY}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	echo ""
+	echo -e "                       ${RED}[!]${ENDCOLOR}${GRAY}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${RED}[!]${ENDCOLOR}"
 	echo -e "${GRAY}OPTIONS:${ENDCOLOR}"
-	echo -e "-u         ${CYAN}Mandatory to provide TARGET-IP${ENDCOLOR}"
-	echo -e "-p         ${CYAN}Specify a Port number.${ENDCOLOR}"
-	echo -e "-d         ${CYAN}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
-	echo -e "-x         ${CYAN}For providing extentions for Dirbusting example : -x php  OR -x .php,.txt${ENDCOLOR}"
-	echo -e "-a         ${CYAN}To specifiy what to scan${ENDCOLOR}"
-	echo -e "           ${CYAN}Available OPTIONS : NMAP (full port scan)| SMTP | DNS | HTTP | POP3 | IMAP | SMB | NFS${ENDCOLOR}"
-	echo -e "-a all     ${CYAN}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
+	echo -e "-u         			${GRAY}Mandatory to provide TARGET-IP${ENDCOLOR}"
+	echo -e "-p         			${GRAY}Specify a Port number.${ENDCOLOR}"
+	echo -e "-d         			${GRAY}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
+	echo -e "-x         			${GRAY}For providing extentions for Dirbusting example : -x php  OR -x .php,.txt${ENDCOLOR}"
+	echo -e "-a         			${GRAY}To specifiy what to scan${ENDCOLOR}"
+	echo -e "           			${GRAY}Available OPTIONS : nmap (full port scan)| smtp | dns | http | pop3 | imap | smb | nfs${ENDCOLOR}"
+	echo -e "-a all     			${GRAY}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
 	echo " "
 	echo "USAGE EXAMPLES:"  					#///ADD more examples
 	echo -e  " ${LIGHTGREEN} $0 -u <TARGET-IP> OPTIONS... ${ENDCOLOR}"
@@ -37,14 +44,15 @@ function usage
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a all${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a nfs${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a{nfs,pop3,smb} ${ENDCOLOR} ${RED}//To Scan Multiple Services${ENDCOLOR}"
-
+	echo $line
+	echo $line
 }
 
 function portcheck
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running an initial portscan...${ENDCOLOR}"
 	portsnmap=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > portsfromrust ; cat portsfromrust)
-	cat portsfromrust | tr "," "\n" > /tmp/ports ; rm portsfromrust  #here is created a file containing the ports
+	cat portsfromrust | tr "," "\n" > /tmp/ports ; rm portsfromrust  #here i created a file containing the ports
 	echo -e  -n "${BLUE}[+]${ENDCOLOR}" 
 	nmap -Pn -p- --min-rate=1000 $host >> /tmp/portsforservices
 	cat /tmp/portsforservices | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> /tmp/ports ;rm portsfromnmap 2>/dev/null
@@ -72,10 +80,12 @@ function full_ps #FUll portscan + All checks
 
 function smtp
 {
-	q=$(cat /tmp/ports)
-	for i in $q
-	do
-		if [[ "$i" == "25" ]]; then
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$p" == "" ]]; then
+		:
+	else
+		for i in $q
+		do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMTP[USERS & COMMANDS]...${ENDCOLOR}"
 			echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			echo -e "\n$line" >> Results/nmap-result
@@ -88,42 +98,46 @@ function smtp
 			nmap -p25 --script smtp-commands $host >> Results/nmap-result
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 			echo ""
-		fi
-	done
+		done
+	fi
 
 
 }
 
 function pop3
 {
-	q=$(cat /tmp/ports)
-	for i in $q
-	do
-		if [[ "$i" == "110" ]]; then
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$p" == "" ]]; then
+		:
+	else
+		for i in $q
+		do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating POP3 capabilties...${ENDCOLOR}"
 			echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			echo -e "\n$line" >> Results/nmap-result >> Results/nmap-result
 			echo "                                  [+]POP3 CAPABILITIES RESULT" >> Results/nmap-result
 			echo -e "$line" >> Results/nmap-result  #design
 			nmap -Pn -p110 --script pop3-capabilities -sV $host >> Results/nmap-result
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
+			echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 			echo ""
-		fi
-	done
+		done
+	fi
 }
 
 function dns
 {
-	q=$(cat /tmp/ports)
-	for i in $q
-	do
-		if [[ "$i" == "53" ]]; then
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$p" == "" ]]; then
+		:
+	else
+		for i in $q
+		do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running a DNS Zone Transfer...${ENDCOLOR}"
 			dig axfr @$host
-			echo -e "${RED}[+]${ENDCOLOR}${RED}If no results appeared try --> ${ENDCOLOR} ${YELLOW}dig axfr @<TARGET-IP> <DOMAIN NAME>${ENDCOLOR}"
+			echo -e "${RED}[!]${ENDCOLOR}${RED}If no results appeared try --> ${ENDCOLOR} ${YELLOW}dig axfr @<TARGET-IP> <DOMAIN NAME>${ENDCOLOR}"
 			echo ""
-		fi
-	done
+		done
+	fi
 			
 }
 
@@ -142,9 +156,9 @@ function wordpress
 			clean4=$(cat Results/wp-result-$x 2>/dev/null)
 			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" || "clean4" == "" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
-				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
+				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
-				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
+				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
 			fi
 			break		
 		done
@@ -162,9 +176,9 @@ function wordpress
 			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
 			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" || "clean4" == "" ]]; then
 				rm Results/wp-result-$x 2>/dev/null
-				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
+				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
-				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
+				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
 			fi
 		done
 	fi
@@ -180,12 +194,11 @@ function http   #Needs more work and optimization for defining https from https 
 
 function smb
 {
-	q=$(cat /tmp/ports)
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep "microsoft-ds" | cut -d " " -f 1 | cut -d "/" -f 1)
 	for i in $q
 	do
-		if [[ "$i" == "445" ]]; then
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMB [NULL-SESSION]${ENDCOLOR}"
-			test=$(crackmapexec smb $host -u "" -p "" --shares 2>/dev/null)
+			test=$( crackmapexec smb $host -u "" -p "" --shares 2>/dev/null )
 			if [[ "$test" == "" ]]; then
 				echo -e "${RED}[!]Cannot login with NULL-SESSION${ENDCOLOR}"
 				echo ""
@@ -198,10 +211,9 @@ function smb
 				echo ""
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using NMAP to Enum share paths...${ENDCOLOR}"
 				echo -e -n "${BLUE}[*]${ENDCOLOR}"
-				nmap -Pn -p445 --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
+				nmap -Pn -$i --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
 				echo""
 			fi
-		fi
 
 	done
 }
@@ -220,10 +232,12 @@ function redis
 
 function nfs
 {
-	s=$(cat /tmp/ports)
-	for i in $s
-	do
-		if [[ "$i" == "2049" ]]; then
+	s=$(cat /tmp/portsforservices | grep ^[0-9] | grep "nfs" | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$s" == "" ]]; then
+		:
+	else
+		for i in $s
+		do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating NFS...${ENDCOLOR}"
 			w=$(showmount -e $host | grep "/")
 			echo -e "${YELLOW}[+]${ENDCOLOR}You can mount --> ${RED}$w${ENDCOLOR}"
@@ -233,8 +247,9 @@ function nfs
 			sudo mount -t nfs $host:$q /tmp/mount_point
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! --> ${ENDCOLOR}Check ${YELLOW}/tmp/mount_point${ENDCOLOR}"
 			echo ""
-		fi
-	done
+		done
+	fi
+
 }
 function vhosts
 {
@@ -396,4 +411,3 @@ done
 #memcached-tool
 #memcdump
 #memcat --servers=ip  <key>
-#for wpscan use gre to grep http from porscan  #cat  nmap-result | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1
