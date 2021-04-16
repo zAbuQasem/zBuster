@@ -133,7 +133,6 @@ function wordpress
 	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
 		for x in $q
 		do
-			echo "1"
 			wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
 			echo "" >> Results/wp-result-$x
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$x
