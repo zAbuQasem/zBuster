@@ -130,11 +130,10 @@ function dns
 function wordpress
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Testing WordPress ${ENDCOLOR}${RED}[If Available]${ENDCOLOR}"
-	q=$(cat portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
-	for x in $q
-	do
-		if [[ "$x" == "80" || "$x" == "8080" ]]
-		then
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
+		for x in $q
+		do
+			echo "1"
 			wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
 			echo "" >> Results/wp-result-$x
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$x
@@ -147,10 +146,16 @@ function wordpress
 				echo -e "${YELLOW}[+]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
 				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
-			fi		
-
-		elif [[ "$x" == "443" ]]; then
-			wpscan  --url https://$host --disable-tls-checks --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
+			fi
+			break		
+		done
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$q" == "" ]]; then
+		:
+	else
+		for x in $q :
+		do
+			wpscan  --url https://$host:$q --disable-tls-checks --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
 			echo "" >> Results/wp-result-$x
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive' option" >> Results/wp-result-$x
 			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
@@ -162,22 +167,16 @@ function wordpress
 			else
 				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
 			fi
-
-		fi
-
-	done
-
+		done
+	fi
 }
 
 function http   #Needs more work and optimization for defining https from https and cmsscanners
 {
-	q=$(cat /tmp/ports)
-	for i in $q :
-	do
-		if [[ "i" == "80" || "i" == "8080" || "i" == "443" ]]; then
-			wordpress $host $p
-		fi
-	done
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$q" != "" ]]; then
+		wordpress $host $p
+	fi
 }
 
 function smb
@@ -250,7 +249,7 @@ function Dirbusting #Directory Bruteforcing
 
 	if [[ "$d" == "http" ]]
 	then
-	gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -q -z -o Results/bust$p 2>/dev/null #> Results/ignore;rm Results/ignore
+	gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -q -z -o Results/bust$p 2>/dev/null #> Results/ignore;rm Results/ignore
 	b=$( cat Results/bust$p )
 		 if [[ "$b" == "" ]]; then
 		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
@@ -260,7 +259,7 @@ function Dirbusting #Directory Bruteforcing
 
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 40 -k -q -z -o Results/bust$p #> Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$p #> Results/ignore;rm Results/ignore
 			b=$( cat Results/bust$p )
 		 if [[ "$b" == "" ]]; then
 		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
