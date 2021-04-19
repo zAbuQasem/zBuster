@@ -14,37 +14,50 @@ CYAN="\e[35m"
 line=$(for i in {1..120};do printf '-' ;done)
 
 mkdir Results 2>/dev/null
-echo "       ______                                "
-echo "      (____  \              _                "
-echo " _____ ____)  )_   _  ___ _| |_ _____  ____  "
-echo "(___  )  __  (| | | |/___|_   _) ___ |/ ___) "
-echo " / __/| |__)  ) |_| |___ | | |_| ____| |     "
-echo "(_____)______/|____/(___/   \__)_____)_|   v1.0 "
-echo "                                             "     
-echo -e "${CYAN}Author:${ENDCOLOR} https://www.linkedin.com/in/zeyad-yahya-0985971b5/"                                                
+cat <<'EOF'
+       ______                               
+      (____  \              _               
+ _____ ____)  )_   _  ___ _| |_ _____  ____ 
+(___  )  __  (| | | |/___|_   _) ___ |/ ___)
+ / __/| |__)  ) |_| |___ | | |_| ____| |    
+(_____)______/|____/(___/   \__)_____)_|    
+                                            
+
+EOF
+echo -e "${CYAN}Author : Zeyad AbuQasem${ENDCOLOR}"      
+echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-yahya-0985971b5/${ENDCOLOR}"
+echo -e "${CYAN}Youtube : https://www.youtube.com/channel/UCRPJr4hJzeJwQv0Z6_NM5iw${ENDCOLOR}"                                                
 echo $line
 
 
 function usage
 {
 	echo ""
-	echo -e "                       ${RED}[!]${ENDCOLOR}${GRAY}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${RED}[!]${ENDCOLOR}"
-	echo -e "${GRAY}OPTIONS:${ENDCOLOR}"
+	echo -e "                       ${RED}[!]${ENDCOLOR}${RED}Please Pay Attention To The Values And Their Positions${ENDCOLOR}${RED}[!]${ENDCOLOR}"
+	echo ""
+	echo -e "${GRAY}OPTIONS                         Description${ENDCOLOR}"
+	echo -e "${RED}-------                         -----------${ENDCOLOR}"
 	echo -e "-u         			${GRAY}Mandatory to provide TARGET-IP${ENDCOLOR}"
+	echo ""
 	echo -e "-p         			${GRAY}Specify a Port number.${ENDCOLOR}"
+	echo ""
 	echo -e "-d         			${GRAY}For Dirbusting MUST provide a PROTOCOL { http | https }  AND -p <portnumber>${ENDCOLOR}"
+	echo ""
 	echo -e "-x         			${GRAY}For providing extentions for Dirbusting example : -x php  OR -x .php,.txt${ENDCOLOR}"
-	echo -e "-a         			${GRAY}To specifiy what to scan${ENDCOLOR}"
-	echo -e "           			${GRAY}Available OPTIONS : nmap (full port scan)| smtp | dns | http | pop3 | smb | nfs${ENDCOLOR}"
-	echo -e "-a all     			${GRAY}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
-	echo " "
+	echo ""
+	echo -e "-s         			${GRAY}To specifiy what to scan${ENDCOLOR}"
+	echo ""
+	echo -e "           			${GRAY}Available OPTIONS :[ nmap (full port scan) | smtp | dns | http | pop3 | smb | nfs ]${ENDCOLOR}"
+	echo ""
+	echo -e "-s all     			${GRAY}To scan everything! <except dirbusting> //RECOMMENDED${ENDCOLOR}"
+	echo ""
 	echo "USAGE EXAMPLES:"  					#///ADD more examples
 	echo -e  " ${LIGHTGREEN} $0 -u <TARGET-IP> OPTIONS... ${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 80 -x .php -d http ${ENDCOLOR}"
 	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -p 443 -x .php,.txt -d https${ENDCOLOR}"
-	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a all${ENDCOLOR}"
-	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a nfs${ENDCOLOR}"
-	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -a{nfs,pop3,smb} ${ENDCOLOR} ${RED}//To Scan Multiple Services${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -s all${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -s nfs${ENDCOLOR}"
+	echo -e  " ${LIGHTGREEN} $0 -u 127.0.0.1 -s{nfs,pop3,smb} ${ENDCOLOR} ${RED}//To Scan Multiple Services${ENDCOLOR}"
 	echo ""
 }
 
@@ -293,9 +306,9 @@ elif [[ "$1" != "-u" && "$1" != "-h" ]]
 		echo ""
 fi
 
-while getopts ":u:p:d:x:a:c:vh" arg 
+while getopts ":u:p:d:x:s:c:vh" arg 
 do
-	case $arg in
+	case $srg in
 	u)
 	host=${OPTARG}  #to save the value of the arg to it
 	echo ""
@@ -307,7 +320,7 @@ do
 	elif [[ "$c" != "" ]]; then
 		echo -e -n "${RED}[*]Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
 		read ans
-		if [[ "$ans" == "y" ]]; then
+		if [[ "$sns" == "y" ]]; then
 			rm /tmp/ports 2>/dev/null
 			echo ""
 			portcheck $host
@@ -325,9 +338,9 @@ do
 	x="-x ${OPTARG}"
     ;;
 #-------------------------------------------////applying the functions
-    a)
-	a=${OPTARG}
-	if [[ "$a" == "all" ]]; then
+    s)
+	s=${OPTARG}
+	if [[ "$s" == "all" ]]; then
 		full_ps $host
 		smtp $host $p $line
 		dns $host
@@ -336,25 +349,25 @@ do
 		smb $host
 		http $host $p
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "nmap" ]]; then
+	elif [[ "$s" == "nmap" ]]; then
 		full_ps $host
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "smb" ]]; then
+	elif [[ "$s" == "smb" ]]; then
 		smb $host
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "nfs" ]]; then    
+	elif [[ "$s" == "nfs" ]]; then    
 		nfs $host
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "dns" ]]; then
+	elif [[ "$s" == "dns" ]]; then
 		dns $host
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "pop3" ]]; then
+	elif [[ "$s" == "pop3" ]]; then
 		pop3 $host $p  
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "smtp" ]]; then  
+	elif [[ "$s" == "smtp" ]]; then  
 		smtp $host $p
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
-	elif [[ "$a" == "http" ]]; then
+	elif [[ "$s" == "http" ]]; then
 		http $host $p
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 
@@ -405,9 +418,3 @@ do
     ;;
 	esac
 done
-#redis
-#see a fix to the portscan files when dirbusting
-#memcached-info
-#memcached-tool
-#memcdump
-#memcat --servers=ip  <key>
