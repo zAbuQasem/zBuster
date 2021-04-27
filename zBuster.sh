@@ -308,7 +308,7 @@ fi
 
 while getopts ":u:p:d:x:s:c:vh" arg 
 do
-	case $srg in
+	case $arg in
 	u)
 	host=${OPTARG}  #to save the value of the arg to it
 	echo ""
