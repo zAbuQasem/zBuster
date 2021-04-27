@@ -254,7 +254,7 @@ function nfs
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating NFS...${ENDCOLOR}"
 			w=$(showmount -e $host | grep "/")
 			echo -e "${YELLOW}[+]${ENDCOLOR}You can mount --> ${RED}$w${ENDCOLOR}"
-			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Attempting to mount it on --> ${ENDCOLOR}${YELLOW}/tmp/1${ENDCOLOR}"
+			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Attempting to mount it on --> ${ENDCOLOR}${YELLOW}/tmp/mount_point${ENDCOLOR}"
 			q=$(showmount -e $host | grep "/" | cut -d " " -f1)
 			mkdir /tmp/mount_point 2>/dev/null
 			sudo mount -t nfs $host:$q /tmp/mount_point
