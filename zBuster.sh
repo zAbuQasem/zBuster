@@ -269,27 +269,16 @@ function vhosts
 
 function Dirbusting #Directory Bruteforcing
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting...${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	ww=$(echo $p | cut -d ":" -f 2)
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting...${ENDCOLOR}"
 
 	if [[ "$d" == "http" ]]
 	then
-	gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -q -z -o Results/bust$p 2>/dev/null #> Results/ignore;rm Results/ignore
-	b=$( cat Results/bust$p )
-		 if [[ "$b" == "" ]]; then
-		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
-		 else
-		 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
-		 fi
+		gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -q -z -o Results/bust$ww > Results/ignore;rm Results/ignore
 
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$p 2>/dev/null #> Results/ignore;rm Results/ignore
-			b=$( cat Results/bust$p )
-		 if [[ "$b" == "" ]]; then
-		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
-		 else
-		 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$p${ENDCOLOR}"
-		 fi
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$ww > Results/ignore;rm Results/ignore
 	fi
 }
 
@@ -315,9 +304,10 @@ do
 	if [[ "$c" == "" ]]; then
 		portcheck $host
 	elif [[ "$c" != "" ]]; then
+		echo -e "${RED}[*]Type 'n' if you are dirbusting${ENDCOLOR}"
 		echo -e -n "${RED}[*]Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
 		read ans
-		if [[ "$sns" == "y" ]]; then
+		if [[ "$ans" == "y" ]]; then
 			rm /tmp/ports 2>/dev/null
 			echo ""
 			portcheck $host
@@ -376,19 +366,32 @@ do
 		then
 			d=${OPTARG}
 			Dirbusting $d $host $p $x &
-			sleep 2
-				
-		elif [[ "${OPTARG}" == "https" ]]
-			then
-				d=${OPTARG}
-				Dirbusting $d $host $p $x &
-				sleep 2
-		
-		else
-			echo "INVALID VALUE -> '${OPTARG}'"
-			echo ""
-			usage
+			sleep 10
+			ww=$(echo $p | cut -d ":" -f 2)
+			b=$( cat Results/bust$ww )
+			if [[ "$b" == "" ]]; then
+				echo -e "${RED}[!]Error...maybe you cannot dirbust this url!${ENDCOLOR}"
+			else
+				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$ww${ENDCOLOR}"
+			fi
+	elif [[ "${OPTARG}" == "https" ]]
+		then
+			d=${OPTARG}
+			Dirbusting $d $host $p $x &
+			sleep 10
+			b=$( cat Results/bust$ww )
+			if [[ "$b" == "" ]]; then
+				echo -e "${RED}[!]Error...maybe you cannot dirbust this url!${ENDCOLOR}"
+			else
+				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Check results from --> ${ENDCOLOR}${YELLOW}Results/bust$ww${ENDCOLOR}"
+			fi
+	else
+		echo "INVALID VALUE -> '${OPTARG}'"
+		echo ""
+		usage
 	fi
+	#pr=$(ps aux | grep -i "gobuster" | cut -d " " -f 5 | grep ^[0-9])
+	#echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}PID IS :${ENDCOLOR}${RED} ${pr} ${ENDCOLOR}"
     ;;
 
     v)
