@@ -1,5 +1,5 @@
 # zBuster
-A bash script for automating both Port scanning & service enumeration using well known tools to save time and effort!
+A bash script for automating both Port scanning & Service enumeration using well known tools to save time and effort!
 # How to install:
 git clone https://github.com/zAbuQasem/zBuster
 
