@@ -12,6 +12,7 @@ LIGHTGREEN="\e[92m"
 CYAN="\e[35m"
 
 line=$(for i in {1..120};do printf '-' ;done)
+line2=$(for i in {1..100};do printf '-' ;done)
 
 mkdir Results 2>/dev/null
 cat <<'EOF'
@@ -27,7 +28,7 @@ EOF
 echo -e "${CYAN}Author : Zeyad AbuQasem${ENDCOLOR}"      
 echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-yahya-0985971b5/${ENDCOLOR}"
 echo -e "${CYAN}Youtube : https://www.youtube.com/channel/UCRPJr4hJzeJwQv0Z6_NM5iw${ENDCOLOR}"                                                
-echo $line
+echo $line2
 
 
 function usage
@@ -216,10 +217,7 @@ function smb
 				echo -e "${RED}[!]Cannot login with NULL-SESSION${ENDCOLOR}"
 				echo ""
 			else
-				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using CRACKMAPEXEC...${ENDCOLOR}"
-				crackmapexec smb $host -u "" -p "" --shares
-				echo ""
-				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using SMBCLIENT...${ENDCOLOR}"
+				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using SMBMAP...${ENDCOLOR}"
 				smbmap -H $host -r
 				echo ""
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using NMAP to Enum share paths...${ENDCOLOR}"
@@ -227,7 +225,6 @@ function smb
 				nmap -Pn -$i --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
 				echo""
 			fi
-
 	done
 }
 
@@ -286,7 +283,7 @@ function Dirbusting #Directory Bruteforcing
 
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$p #> Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$p 2>/dev/null #> Results/ignore;rm Results/ignore
 			b=$( cat Results/bust$p )
 		 if [[ "$b" == "" ]]; then
 		 	echo -e "${RED}[!]Error...cannot dirbust this url!${ENDCOLOR}"
