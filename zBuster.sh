@@ -163,7 +163,6 @@ function wordpress
 	if [[ "$q" != "" ]]; then
 		for x in $q
 		do
-			echo "$x"
 			/usr/bin/wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o Results/wp-result-$x #2>/dev/null
 			echo "" >> Results/wp-result-$x
 			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$x
