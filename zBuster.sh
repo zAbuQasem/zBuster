@@ -29,8 +29,6 @@ echo -e "${CYAN}Author : Zeyad AbuQasem${ENDCOLOR}"
 echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-yahya-0985971b5/${ENDCOLOR}"
 echo -e "${CYAN}Youtube : https://www.youtube.com/channel/UCRPJr4hJzeJwQv0Z6_NM5iw${ENDCOLOR}"                                                
 echo $line2
-
-
 function usage
 {
 	echo ""
@@ -70,7 +68,7 @@ function portcheck
 	echo -e  -n "${BLUE}[+]${ENDCOLOR}" 
 	nmap -Pn -p- --min-rate=1000 $host >> /tmp/portsforservices
 	cat /tmp/portsforservices | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> /tmp/ports ;rm portsfromnmap 2>/dev/null
-	cat /tmp/ports | tr "," "\n" | sort -u | uniq > ppp ;cp ppp /tmp/ports; rm ppp
+	cat /tmp/ports | tr "," "\n" | sort -u | uniq > ppp ;cp ppp /tmp/ports; rm ppp 2>/dev/null
 	s=$(cat /tmp/ports)
 	for i in $s
 	do
@@ -81,6 +79,7 @@ function portcheck
 
 function full_ps #FUll portscan + All checks
 {
+	echo $host > /tmp/host
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating open ports...${ENDCOLOR}"
 	ports=$( cat /tmp/ports)
 	ports=$( echo  -n $ports | tr " " "," )
@@ -89,6 +88,8 @@ function full_ps #FUll portscan + All checks
 	#echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Doing Nmap-Vuln scan...${ENDCOLOR}"  vulnscan
 	#echo -e -n "${BLUE}[*]${ENDCOLOR}"
 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> ${YELLOW}Results/nmap-result${ENDCOLOR}"
+	echo "" >> Results/nmap-result
+	echo "////Don't forget to do a UDP/Vuln scan if you got stuck" >> Results/nmap-result 
 	echo ""
 }
 
@@ -161,18 +162,20 @@ function wordpress
 	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
 		for x in $q
 		do
-			wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
-			echo "" >> Results/wp-result-$x
-			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$x
-			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
-			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
-			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
-			clean4=$(cat Results/wp-result-$x 2>/dev/null)
+			x=:$x
+			o=$(echo $x | cut -d ":" -f 2)
+			wpscan  --url http://$host$x --no-banner --update  -e u vp vt -o Results/wp-result-$o 2>/dev/null
+			echo "" >> Results/wp-result-$o
+			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> Results/wp-result-$o
+			clean=$(cat Results/wp-result-$o 2>/dev/null | cut -d " " -f 10 | grep "down")
+			clean2=$(cat Results/wp-result-$o 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
+			clean3=$(cat Results/wp-result-$o 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
+			clean4=$(cat Results/wp-result-$o 2>/dev/null)
 			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" || "clean4" == "" ]]; then
-				rm Results/wp-result-$x 2>/dev/null
-				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
+				rm Results/wp-result-$o 2>/dev/null
+				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$o${ENDCOLOR}"
 			else
-				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
+				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$o${ENDCOLOR}"
 			fi
 			break		
 		done
@@ -182,17 +185,19 @@ function wordpress
 	else
 		for x in $q :
 		do
-			wpscan  --url https://$host:$q --disable-tls-checks --no-banner --update  -e u vp vt -o Results/wp-result-$x 2>/dev/null
-			echo "" >> Results/wp-result-$x
-			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive' option" >> Results/wp-result-$x
-			clean=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
-			clean2=$(cat Results/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
-			clean3=$(cat Results/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
+			x=:$x
+			o=$(echo $x | cut -d ":" -f 2)
+			wpscan  --url https://$host$x --disable-tls-checks --no-banner --update  -e u vp vt -o Results/wp-result-$o 2>/dev/null
+			echo "" >> Results/wp-result-$o
+			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive' option" >> Results/wp-result-$o
+			clean=$(cat Results/wp-result-$o 2>/dev/null | cut -d " " -f 10 | grep "down")
+			clean2=$(cat Results/wp-result-$o 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
+			clean3=$(cat Results/wp-result-$o 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
 			if [[ "$clean" == "down" || "$clean2"  == "up" || "$clean3" == "--ignore-main-redirect" || "clean4" == "" ]]; then
-				rm Results/wp-result-$x 2>/dev/null
-				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
+				rm Results/wp-result-$o 2>/dev/null
+				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$o${ENDCOLOR}"
 			else
-				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
+				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$o${ENDCOLOR}"
 			fi
 		done
 	fi
@@ -204,6 +209,17 @@ function http   #Needs more work and optimization for defining https from https 
 	if [[ "$q" != "" ]]; then
 		wordpress $host $p
 	fi
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}This could take a while..${ENDCOLOR}"
+	for i in $q
+	do
+		i=:$i
+		gobuster dir -u http://$host$i -w /usr/share/wordlists/dirb/common.txt -t 50 -q -z -o Results/bust-common-$i
+		echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> Results/bust-common-$i${ENDCOLOR}"
+	done
+	
+
+
 }
 
 function smb
@@ -274,11 +290,11 @@ function Dirbusting #Directory Bruteforcing
 
 	if [[ "$d" == "http" ]]
 	then
-		gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -q -z -o Results/bust$ww > Results/ignore;rm Results/ignore
+		gobuster dir -u http://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -q -z -o Results/bust$ww &>/dev/null
 
 	elif [[ "$d" == "https" ]]
 		then
-			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$ww > Results/ignore;rm Results/ignore
+			gobuster dir -u https://$host$p -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt $x -t 50 -k -q -z -o Results/bust$ww &>/dev/null
 	fi
 }
 
@@ -300,15 +316,18 @@ do
 	echo ""
 	echo -e "${YELLOW}[*]${ENDCOLOR}Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}"
 	echo ""
-	c=$(cat /tmp/ports 2>/dev/null)
+	c=$(cat /tmp/portsforservices 2>/dev/null)
 	if [[ "$c" == "" ]]; then
 		portcheck $host
 	elif [[ "$c" != "" ]]; then
-		echo -e "${RED}[*]Type 'n' if you are dirbusting${ENDCOLOR}"
-		echo -e -n "${RED}[*]Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
+		hst=$(cat /tmp/host 2>/dev/null)
+		echo ""
+		echo -e "${RED}[*]Type 'n' if you are Dirbusting${ENDCOLOR}"
+		echo -e -n "${RED}[*]Previous scan results found for {$hst}...Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
 		read ans
 		if [[ "$ans" == "y" ]]; then
-			rm /tmp/ports 2>/dev/null
+			rm /tmp/portsforservices 2>/dev/null
+			clear
 			echo ""
 			portcheck $host
 		else
