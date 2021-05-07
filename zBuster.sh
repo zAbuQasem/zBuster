@@ -272,7 +272,7 @@ function nfs
 			mkdir /tmp/mount_point 2>/dev/null
 			sudo mount -t nfs $host:$q /tmp/mount_point
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! --> ${ENDCOLOR}Check ${YELLOW}/tmp/mount_point${ENDCOLOR}"
-			echo -e "${GRAY}{*}Viewing Directory Contents...${ENDCOLOR}"
+			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Viewing Directory Contents...${ENDCOLOR}"
 			echo ""
 			ls -la /tmp/mount_point
 			echo ""
