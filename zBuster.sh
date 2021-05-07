@@ -233,7 +233,7 @@ function http   #Needs more work and optimization for defining https from https 
 	if [[ "$q" != "" ]]; then
 		wordpress $host $p
 		echo ""
-		#com-dirb $host $p
+		com-dirb $host $p
 		
 	fi
 }
