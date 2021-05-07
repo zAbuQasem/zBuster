@@ -97,7 +97,7 @@ function full_ps #FUll portscan + All checks
 function smtp
 {
 	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "smtp" | cut -d " " -f 1 | cut -d "/" -f 1)
-	if [[ "$p" == "" ]]; then
+	if [[ "$q" == "" ]]; then
 		:
 	else
 		for i in $q
@@ -107,11 +107,11 @@ function smtp
 			echo -e "\n$line" >> Results/nmap-result
 			echo "                                  [#]SMTP USER RESULT[#]" >> Results/nmap-result
 			echo -e "$line" >> Results/nmap-result  #design
-			nmap -Pn -p25 --script smtp-enum-users $host >> Results/nmap-result
+			nmap -Pn -p$i --script smtp-enum-users $host >> Results/nmap-result
 			echo -e "\n$line" >> Results/nmap-result  #design
 			echo "                                  [#]SMTP COMMANDS RESULT[#]" >> Results/nmap-result
 			echo -e "$line" >> Results/nmap-result
-			nmap -p25 --script smtp-commands $host >> Results/nmap-result
+			nmap -p$i --script smtp-commands $host >> Results/nmap-result
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 			echo ""
 		done
@@ -143,7 +143,7 @@ function pop3
 function dns
 {
 	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "domain" | cut -d " " -f 1 | cut -d "/" -f 1)
-	if [[ "$p" == "" ]]; then
+	if [[ "$q" == "" ]]; then
 		:
 	else
 		for i in $q
