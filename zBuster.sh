@@ -13,7 +13,8 @@ CYAN="\e[35m"
 
 line=$(for i in {1..120};do printf '-' ;done)
 line2=$(for i in {1..80};do printf '-' ;done)
-
+line3=$(for i in {1..50};do printf '#' ;done)
+line4=$(for i in {1..50};do printf '-' ;done)
 mkdir Results 2>/dev/null
 cat <<'EOF'
        ______                               
@@ -174,7 +175,7 @@ function wordpress
 				rm Results/wp-result-$x 2>/dev/null
 				echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 			else
-				echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
+				echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
 			fi		
 		done
 	else
@@ -194,7 +195,7 @@ function wordpress
 					rm Results/wp-result-$x 2>/dev/null
 					echo -e "${RED}[!]WordPress isn't Available on ${ENDCOLOR}-> ${RED}$x${ENDCOLOR}"
 				else
-					echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
+					echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/wp-result-$x${ENDCOLOR}"
 				fi
 			done
 		fi
@@ -208,8 +209,16 @@ function com-dirb
 		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
 		for i in $(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
-			/usr/bin/gobuster dir -u http://$host:$i -w /usr/share/wordlists/dirb/common.txt -t 50 -o Results/bust-common-$i
+			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
+			/usr/bin/gobuster dir -u http://$host:$i -w /usr/share/wordlists/dirb/common.txt -q -t 50 -o Results/bust-common-$i
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> Results/bust-common-$i${ENDCOLOR}"
+
 			echo ""
 		done
 	fi
@@ -219,7 +228,15 @@ function com-dirb
 		echo "$q"
 		for i in $(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
-			/usr/bin/gobuster dir -u https://$host:$i -w /usr/share/wordlists/dirb/common.txt -k -t 50 -o Results/bust-common-$i
+			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
+			/usr/bin/gobuster dir -u https://$host:$i -w /usr/share/wordlists/dirb/common.txt -k -q -t 50 -o Results/bust-common-$i
+			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> Results/bust-common-$i${ENDCOLOR}"
 			echo ""
 		done
