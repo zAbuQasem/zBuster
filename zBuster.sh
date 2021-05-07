@@ -141,7 +141,7 @@ function pop3
 
 function dns
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "dns" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "domain" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$p" == "" ]]; then
 		:
 	else
