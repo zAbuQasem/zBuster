@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 RED="\e[31m"
 GRAY="\e[37m"
@@ -12,7 +12,7 @@ LIGHTGREEN="\e[92m"
 CYAN="\e[35m"
 
 line=$(for i in {1..120};do printf '-' ;done)
-line2=$(for i in {1..100};do printf '-' ;done)
+line2=$(for i in {1..80};do printf '-' ;done)
 
 mkdir Results 2>/dev/null
 cat <<'EOF'
@@ -95,7 +95,7 @@ function full_ps #FUll portscan + All checks
 
 function smtp
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "smtp" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$p" == "" ]]; then
 		:
 	else
@@ -121,7 +121,7 @@ function smtp
 
 function pop3
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "pop" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$p" == "" ]]; then
 		:
 	else
@@ -132,7 +132,7 @@ function pop3
 			echo -e "\n$line" >> Results/nmap-result >> Results/nmap-result
 			echo "                                  [+]POP3 CAPABILITIES RESULT" >> Results/nmap-result
 			echo -e "$line" >> Results/nmap-result  #design
-			nmap -Pn -p110 --script pop3-capabilities -sV $host >> Results/nmap-result
+			nmap -Pn -p$i --script pop3-capabilities -sV $host >> Results/nmap-result
 			echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}Results/nmap-result${ENDCOLOR}"
 			echo ""
 		done
@@ -141,7 +141,7 @@ function pop3
 
 function dns
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep https | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "dns" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$p" == "" ]]; then
 		:
 	else
@@ -183,7 +183,7 @@ function wordpress
 	if [[ "$q" == "" ]]; then
 		:
 	else
-		for x in $q :
+		for x in $q
 		do
 			x=:$x
 			o=$(echo $x | cut -d ":" -f 2)
@@ -208,18 +208,16 @@ function http   #Needs more work and optimization for defining https from https 
 	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
 		wordpress $host $p
+		echo ""
+		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
+		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}This could take a while..${ENDCOLOR}"
+		for i in "$q"
+		do
+			p=":$i"
+			/usr/bin/gobuster dir -u http://$host$p -w /usr/share/wordlists/dirb/common.txt -t 50 -o Results/bust-common-$i
+			echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> Results/bust-common-$i${ENDCOLOR}"
+		done
 	fi
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}This could take a while..${ENDCOLOR}"
-	for i in $q
-	do
-		i=:$i
-		gobuster dir -u http://$host$i -w /usr/share/wordlists/dirb/common.txt -t 50 -q -z -o Results/bust-common-$i
-		echo -e "${GRAY}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> Results/bust-common-$i${ENDCOLOR}"
-	done
-	
-
-
 }
 
 function smb
@@ -230,7 +228,9 @@ function smb
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMB [NULL-SESSION]${ENDCOLOR}"
 			test=$( crackmapexec smb $host -u "" -p "" --shares 2>/dev/null )
 			if [[ "$test" == "" ]]; then
-				echo -e "${RED}[!]Cannot login with NULL-SESSION${ENDCOLOR}"
+				echo -e "${RED}[!]Cannot login with NULL-SESSION[!]${ENDCOLOR}"
+				echo -e "${RED}[*]${ENDCOLOR}${RED}Anyway trying to list shares [Double run the scan just to make sure of the results ^-^]${ENDCOLOR}"
+				smbmap -H $host -r
 				echo ""
 			else
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using SMBMAP...${ENDCOLOR}"
@@ -258,7 +258,7 @@ function redis
 
 function nfs
 {
-	s=$(cat /tmp/portsforservices | grep ^[0-9] | grep "nfs" | cut -d " " -f 1 | cut -d "/" -f 1)
+	s=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "nfs" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$s" == "" ]]; then
 		:
 	else
@@ -272,6 +272,9 @@ function nfs
 			mkdir /tmp/mount_point 2>/dev/null
 			sudo mount -t nfs $host:$q /tmp/mount_point
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! --> ${ENDCOLOR}Check ${YELLOW}/tmp/mount_point${ENDCOLOR}"
+			echo -e "${GRAY}{*}Viewing Directory Contents...${ENDCOLOR}"
+			echo ""
+			ls -la /tmp/mount_point
 			echo ""
 		done
 	fi
