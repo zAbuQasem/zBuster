@@ -63,7 +63,7 @@ function usage
 
 function portcheck
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running an initial portscan...${ENDCOLOR}"
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running an initial portscan${ENDCOLOR} $RED[Don't Abort the scan]${ENDCOLOR}"
 	portsnmap=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > portsfromrust ; cat portsfromrust)
 	cat portsfromrust | tr "," "\n" > Results/.ports ; rm portsfromrust  #here i created a file containing the ports
 	echo -e  -n "${YELLOW}[+]${ENDCOLOR}" 
@@ -358,11 +358,11 @@ do
 		echo -e "${YELLOW}[*]${ENDCOLOR}Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}"
 		c=$(cat Results/.portsforservices 2>/dev/null)
 		if [[ "$c" == "" ]]; then
+			echo ""
 			portcheck $host
 		elif [[ "$c" != "" ]]; then
 			hst=$(cat /tmp/host 2>/dev/null)
-			#echo -e "${RED}[*]Type 'n' if you are Dirbusting${ENDCOLOR}"
-			echo -e "${RED}[*]Previous TARGET-IP:[$hst]${ENDCOLOR}"
+			echo -e "${RED}[!]Previous TARGET-IP:[$hst]${ENDCOLOR}"
 			echo ""
 			#read ans
 			#if [[ "$ans" == "y" ]]; then
