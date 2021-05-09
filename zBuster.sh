@@ -65,12 +65,12 @@ function portcheck
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running an initial portscan...${ENDCOLOR}"
 	portsnmap=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > portsfromrust ; cat portsfromrust)
-	cat portsfromrust | tr "," "\n" > /tmp/ports ; rm portsfromrust  #here i created a file containing the ports
+	cat portsfromrust | tr "," "\n" > Results/.ports ; rm portsfromrust  #here i created a file containing the ports
 	echo -e  -n "${YELLOW}[+]${ENDCOLOR}" 
-	nmap -Pn -p- --min-rate=1000 $host >> /tmp/portsforservices 
-	cat /tmp/portsforservices | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> /tmp/ports ;rm portsfromnmap 2>/dev/null
-	cat /tmp/ports | tr "," "\n" | sort -u | uniq > ppp ;cp ppp /tmp/ports; rm ppp 2>/dev/null
-	s=$(cat /tmp/ports)
+	nmap -Pn -p- --min-rate=1000 $host >> Results/.portsforservices 
+	cat Results/.portsforservices | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> Results/.ports ;rm portsfromnmap 2>/dev/null
+	cat Results/.ports | tr "," "\n" | sort -u | uniq > ppp ;cp ppp Results/.ports; rm ppp 2>/dev/null
+	s=$(cat Results/.ports)
 	for i in $s
 	do
 		echo -e "${BLUE}[+]${ENDCOLOR}${BLUE}Found Port${ENDCOLOR} -> ${RED}$i${ENDCOLOR}"
@@ -82,7 +82,7 @@ function full_ps #FUll portscan + All checks
 {
 	echo "$host" > /tmp/host
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating open ports...${ENDCOLOR}"
-	ports=$( cat /tmp/ports)
+	ports=$( cat Results/.ports)
 	ports=$( echo  -n $ports | tr " " "," )
 	#echo -e  -n "${BLUE}[+]${ENDCOLOR}"
 	sudo nmap -Pn -O -A -p$ports -T5 $host -oN Results/nmap-result &>/dev/null
@@ -96,7 +96,7 @@ function full_ps #FUll portscan + All checks
 
 function smtp
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "smtp" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | grep -i "smtp" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" == "" ]]; then
 		:
 	else
@@ -122,7 +122,7 @@ function smtp
 
 function pop3
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "pop3" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | grep -i "pop3" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" == "" ]]; then
 		:
 	else
@@ -142,7 +142,7 @@ function pop3
 
 function dns
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "domain" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | grep -i "domain" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" == "" ]]; then
 		:
 	else
@@ -160,7 +160,7 @@ function dns
 function wordpress
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Testing WordPress ${ENDCOLOR}${RED}[If Available]${ENDCOLOR}"
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
 		for x in $q
 		do
@@ -179,7 +179,7 @@ function wordpress
 			fi		
 		done
 	else
-		q=$(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
+		q=$(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		if [[ "$q" == "" ]]; then
 			:
 		else
@@ -204,10 +204,10 @@ function wordpress
 
 function com-dirb
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
 		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
-		for i in $(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+		for i in $(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3 ${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR} $line3${ENDCOLOR}"
@@ -221,10 +221,10 @@ function com-dirb
 			echo ""
 		done
 	fi
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
 		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
-		for i in $(cat /tmp/portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
+		for i in $(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
 			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
@@ -243,7 +243,7 @@ function com-dirb
 
 function http   #Needs more work and optimization for defining https from https and cmsscanners
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
 		wordpress $host $p
 		echo ""
@@ -254,7 +254,7 @@ function http   #Needs more work and optimization for defining https from https 
 
 function smb
 {
-	q=$(cat /tmp/portsforservices | grep ^[0-9] | grep "microsoft-ds" | cut -d " " -f 1 | cut -d "/" -f 1)
+	q=$(cat Results/.portsforservices | grep ^[0-9] | grep "microsoft-ds" | cut -d " " -f 1 | cut -d "/" -f 1)
 	for i in $q
 	do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMB [NULL-SESSION]${ENDCOLOR}"
@@ -290,7 +290,7 @@ function redis
 
 function nfs
 {
-	s=$(cat /tmp/portsforservices | grep ^[0-9] | grep -i "nfs" | cut -d " " -f 1 | cut -d "/" -f 1)
+	s=$(cat Results/.portsforservices | grep ^[0-9] | grep -i "nfs" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$s" == "" ]]; then
 		:
 	else
@@ -356,23 +356,22 @@ do
 		host=${OPTARG}  #to save the value of the arg to it
 		echo ""
 		echo -e "${YELLOW}[*]${ENDCOLOR}Starting on TARGET-IP:${ENDCOLOR}${RED}[$host]${ENDCOLOR}"
-		echo ""
-		c=$(cat /tmp/portsforservices 2>/dev/null)
+		c=$(cat Results/.portsforservices 2>/dev/null)
 		if [[ "$c" == "" ]]; then
 			portcheck $host
 		elif [[ "$c" != "" ]]; then
 			hst=$(cat /tmp/host 2>/dev/null)
+			#echo -e "${RED}[*]Type 'n' if you are Dirbusting${ENDCOLOR}"
+			echo -e "${RED}[*]Previous TARGET-IP:[$hst]${ENDCOLOR}"
 			echo ""
-			echo -e "${RED}[*]Type 'n' if you are Dirbusting${ENDCOLOR}"
-			echo -e -n "${RED}[*]Previous scan results found for {$hst}...Do You want to do a new portscan? ${ENDCOLOR}${GRAY}[y/n]: ${ENDCOLOR}"
-			read ans
-			if [[ "$ans" == "y" ]]; then
-				rm /tmp/portsforservices 2>/dev/null
-				clear
-				portcheck $host
-			else
-				clear
-			fi
+			#read ans
+			#if [[ "$ans" == "y" ]]; then
+			#	rm Results/.portsforservices 2>/dev/null
+			#	clear
+			#	portcheck $host
+			#else
+			#	clear
+			#fi
 		fi
 	fi
 	
