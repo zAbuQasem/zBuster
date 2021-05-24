@@ -1,23 +1,38 @@
+
+
 # zBuster
-A Bash script for Automating Service enumeration using well known tools to save time and effort!
-# How to install:
-git clone https://github.com/zAbuQasem/zBuster
 
-cd zBuster
+### zBuster is an Bash script built to automate the process of portscanning and service enumeration including a Dirbusting option.
+![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster2021.png)
 
-chmod +x *
+## Installation
+```sh
+   git clone https://github.com/zAbuQasem/zBuster
+   cd zBuster
+   chmod +x *
+   sudo ./install.sh
+   ```
+<!-- USAGE EXAMPLES -->
+## Usage
+### All integrated checks
+```sh
+./zBuster.sh -u <TARGET-IP> -s all
+```
+### Specific check
+```sh
+./zBuster.sh -u <TARGET-IP> -s <CHECK>
+```
+### For more options:
+```sh
+./zBuster.sh -h
+```
+## Preview
+![Alt text]()
+  
+## License
 
-./install.sh
+Distributed under the MIT License. See `LICENSE` for more information.
 
-#You can download rustscan from here -> https://github.com/RustScan/RustScan/releases 
-# Screenshots:
-![alt text](https://github.com/zAbuQasem/zBuster/blob/main/zbuster1.png?raw=true)
-
-![alt text](https://github.com/zAbuQasem/zBuster/blob/main/zbuster2.png?raw=true)
-
-![alt text](https://github.com/zAbuQasem/zBuster/blob/main/zbuster3.png?raw=true)
-
-# ToDo
-1- Add redis & memcache servers enumeration
-
-2- improve script and add more options for flexibility
+### TODO:
+```sh
+1- Add more checks
