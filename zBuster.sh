@@ -226,7 +226,7 @@ function com-dirb
 		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
 		for i in $(cat Results/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
-			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
+			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
