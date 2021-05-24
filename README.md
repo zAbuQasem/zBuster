@@ -22,6 +22,10 @@
 ```sh
 ./zBuster.sh -u <TARGET-IP> -s <CHECK>
 ```
+### Dirbusting [Dirbuster-meduim wordlist]
+```sh
+./zBuster.sh -u <TARGET-IP> -p <PORT> -x <FILE-EXTENSIONS [OPTIONAL]> -d <HTTPS OR HTTP>  #Must be in this order or args.
+```
 ### For more options:
 ```sh
 ./zBuster.sh -h
