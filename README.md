@@ -3,7 +3,16 @@
 # zBuster
 
 ### zBuster is an Bash script built to automate the process of portscanning and service enumeration including a Dirbusting option.
-![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster2021.png)
+![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.png)
+
+## Tools:
+ <ol>
+    <li><div>Rustscan</a></li>
+   <li><div>Nmap</a></li>
+    <li><div>Smbclient & Smbmap</a></li>
+    <li><div>Wpscan</a></li>
+    <li><div>Gobuster</a></li>
+  </ol>
 
 ## Installation
 ```sh
@@ -30,8 +39,8 @@
 ```sh
 ./zBuster.sh -h
 ```
-## Preview
-![Alt text]()
+## Preview [Took ~7 minutes]
+![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.gif)
   
 ## License
 
