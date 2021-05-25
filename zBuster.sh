@@ -262,6 +262,10 @@ function smb
 			if [[ "$test" == "" ]]; then
 				echo -e "${RED}[!]Cannot login with NULL-SESSION[!]${ENDCOLOR}"
 				echo -e "${RED}[*]${ENDCOLOR}${RED}Anyway trying to list shares [Double run the scan just to make sure of the results ^-^]${ENDCOLOR}"
+				echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Smbclient :${ENDCOLOR}"
+				smbclient -L ////$host// -N
+				echo ""
+				echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Smbmap :${ENDCOLOR}"
 				smbmap -H $host -r
 				echo ""
 			else
