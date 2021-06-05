@@ -274,7 +274,7 @@ function smb
 				echo ""
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using NMAP to Enum share paths...${ENDCOLOR}"
 				echo -e -n "${BLUE}[*]${ENDCOLOR}"
-				nmap -Pn -$i --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
+				nmap -Pn --script smb-enum-shares $host -oN Results/smb-enum-shares 2>/dev/null
 				echo""
 			fi
 	done
