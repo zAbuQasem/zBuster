@@ -324,6 +324,11 @@ function vhosts
 	gobuster vhost -u http://$host$p -w /usr/share/SecLists-master/Discovery/DNS/subdomains-top1million-110000.txt -t 40 -q -z -o Results/bust-vhosts$p > Results/ignore;rm Results/ignore
 }
 
+function spider
+{
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	gospider -S $host$p -o Results/jsInfo.txt -c 10 -d 1
+}
 function Dirbusting #Directory Bruteforcing
 {
 	ww=$(echo $p | cut -d ":" -f 2)
@@ -400,6 +405,7 @@ do
 		nfs $host
 		pop3 $host $p
 		smb $host
+		spider $host $p
 		http $host $p
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$s" == "nmap" ]]; then
