@@ -13,6 +13,7 @@ else
 	echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.zshrc
 	export GOPATH=$HOME/go
 	export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+	GO111MODULE=on go get -u github.com/jaeles-project/gospider
 	#for crackmapexec
 	python3 -m pip install pipx
 	pipx ensurepath
