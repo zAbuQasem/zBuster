@@ -4,7 +4,7 @@ echo "[!]CTRL+C if you want to abort the installation"
 sleep 6
 wget https://golang.org/dl/go1.16.7.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.16.7.linux-amd64.tar.gz
-mv go1.16.7.linux-amd64.tar.gz DElETE_ME/
+sudo rm go1.16.7.linux-amd64.tar.gz 
 echo 'export GOPATH=$HOME/go' >> $HOME/.bashrc
 echo 'export GOPATH=$HOME/go' >> $HOME/.zshrc
 echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bashrc
