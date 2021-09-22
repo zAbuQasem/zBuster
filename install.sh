@@ -15,10 +15,10 @@ GO111MODULE=on go get -u github.com/jaeles-project/gospider
 #for crackmapexec
 sudo python3 -m pip install pipx
 sudo pipx ensurepath
-sudo apt-get install python3-venv
+sudo apt-get install python3-venv -y
 sudo pipx install crackmapexec
 crackmapexec
 #for nfs
-sudo apt install nfs-common
+sudo apt install nfs-common -y
 #memcache
-sudo apt install libmemcached-tools
+sudo apt install libmemcached-tools -y
