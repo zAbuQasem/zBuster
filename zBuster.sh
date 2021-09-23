@@ -306,7 +306,7 @@ function nfs
 function spider
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
-	gospider -S $host$p -o $output/jsInfo.txt -c 10 -d 1
+	gospider -s http://$host$p -o $output/jsInfo.txt -c 10 -d 1
 }
 function Dirbusting
 {
