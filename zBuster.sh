@@ -15,8 +15,8 @@ line=$(for i in {1..120};do printf '-' ;done)
 line2=$(for i in {1..80};do printf '-' ;done)
 line3=$(for i in {1..8};do printf '#' ;done)
 line4=$(for i in {1..39};do printf '-' ;done)
-mkdir $output 2>/dev/null
 output="result-zbuster"
+mkdir $output 2>/dev/null
 cat <<'EOF'
        ______                               
       (____  \              _               
