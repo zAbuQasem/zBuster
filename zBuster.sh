@@ -144,8 +144,9 @@ function dns
 	else
 		for i in $q
 		do
+			address=$(ping -c 1 $host | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | uniq)
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running a DNS Zone Transfer...${ENDCOLOR}"
-			dig axfr @$host
+			dig axfr @$address $host
 			echo -e "${RED}[!]${ENDCOLOR}${RED}If no $output appeared try --> ${ENDCOLOR} ${YELLOW}dig axfr @<TARGET-IP> <DOMAIN NAME>${ENDCOLOR}"
 			echo ""
 		done
@@ -305,8 +306,11 @@ function nfs
 
 function spider
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
-	gospider -s http://$host$p -o $output/jsInfo.txt -c 10 -d 1
+	q=$(cat $output/.portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
+	if [[ "$q" != "" ]]; then
+		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+		gospider -s http://$host$p -o $output/jsInfo.txt -c 10 -d 1
+	fi
 }
 function Dirbusting
 {
