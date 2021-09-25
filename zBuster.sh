@@ -310,6 +310,7 @@ function spider
 	if [[ "$q" != "" ]]; then
 		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
 		gospider -s http://$host$p -o $output/jsInfo.txt -c 10 -d 1
+		echo ""
 	fi
 }
 function Dirbusting
