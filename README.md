@@ -29,7 +29,7 @@
 <!-- USAGE EXAMPLES -->
 ## Usage
 ### Important Note:
-Make sure to specify a domain name for better scan results.For HackThebox specify the domain name in `/etc/hosts` file
+Make sure to specify a domain name for better scan results.For HackTheBox, specify the domain name in `/etc/hosts` file
 ```txt
 #Example /etc/hosts
 127.0.0.1	localhost
