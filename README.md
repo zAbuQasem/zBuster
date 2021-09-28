@@ -9,9 +9,10 @@
  <ol>
     <li><div>Rustscan</a></li>
    <li><div>Nmap</a></li>
-    <li><div>Smbclient & Smbmap</a></li>
+    <li><div>Smbclient & Smbmap & crackmapexec</a></li>
     <li><div>Wpscan</a></li>
     <li><div>Gobuster</a></li>
+ <li><div>Gospider</a></li>
   </ol>
 
 ## Installation
