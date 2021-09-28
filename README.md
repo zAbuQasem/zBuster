@@ -3,7 +3,7 @@
 # zBuster
 
 ### zBuster is an Bash script built to automate the process of portscanning and service enumeration including a Dirbusting option.
-![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.png)
+![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.svg)
 
 ## Tools:
  <ol>
