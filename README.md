@@ -28,13 +28,30 @@
    ```
 <!-- USAGE EXAMPLES -->
 ## Usage
+### Important Note:
+Make sure to specify a domain name for better scan results.For HackThebox specify the domain name in `/etc/hosts` file
+```txt
+#Example /etc/hosts
+127.0.0.1	localhost
+127.0.1.1	kali
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+#HackTheBox
+10.10.10.243	spider.htb
+10.10.10.240	pivotapi.htb
+10.10.11.114 bolt.htb
+```
+
 ### All integrated checks
 ```sh
-./zBuster.sh -u <TARGET-IP> -s all
+sudo ./zBuster.sh -u <TARGET-IP> -s all
 ```
 ### Specific check
 ```sh
-./zBuster.sh -u <TARGET-IP> -s <CHECK>
+sudo ./zBuster.sh -u <TARGET-IP> -s <CHECK>
 ```
 ### Dirbusting [Dirbuster-meduim wordlist]
 ```sh
