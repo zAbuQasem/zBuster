@@ -17,20 +17,29 @@ line3=$(for i in {1..8};do printf '#' ;done)
 line4=$(for i in {1..39};do printf '-' ;done)
 output="result-zbuster"
 mkdir $output 2>/dev/null
-cat <<'EOF'
-       ______                               
-      (____  \              _               
- _____ ____)  )_   _  ___ _| |_ _____  ____ 
-(___  )  __  (| | | |/___|_   _) ___ |/ ___)
- / __/| |__)  ) |_| |___ | | |_| ____| |    
-(_____)______/|____/(___/   \__)_____)_|   v1.0 
-                                            
-
+cat <<'EOF'                                                                    
+                                                                               
+                 ,---,.                             ___                        
+               ,'  .'  \                          ,--.'|_                      
+       ,----,,---.' .' |         ,--,             |  | :,'             __  ,-. 
+     .'   .`||   |  |: |       ,'_ /|   .--.--.   :  : ' :           ,' ,'/ /| 
+  .'   .'  .':   :  :  /  .--. |  | :  /  /    '.;__,'  /     ,---.  '  | |' | 
+,---, '   ./ :   |    ; ,'_ /| :  . | |  :  /`./|  |   |     /     \ |  |   ,' 
+;   | .'  /  |   :     \|  ' | |  . . |  :  ;_  :__,'| :    /    /  |'  :  /   
+`---' /  ;--,|   |   . ||  | ' |  | |  \  \    `. '  : |__ .    ' / ||  | '    
+  /  /  / .`|'   :  '; |:  | : ;  ; |   `----.   \|  | '.'|'   ;   /|;  : |    
+./__;     .' |   |  | ; '  :  `--'   \ /  /`--'  /;  :    ;'   |  / ||  , ;    
+;   |  .'    |   :   /  :  ,      .-./'--'.     / |  ,   / |   :    | ---'     
+`---'        |   | ,'    `--`----'      `--'---'   ---`-'   \   \  /       v1337.0   
+             `----'                                          `----'            
+                                                                               
 EOF
 echo -e "${CYAN}Author : Zeyad AbuQasem${ENDCOLOR}"      
 echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-yahya-0985971b5/${ENDCOLOR}"
 echo -e "${CYAN}Youtube : https://www.youtube.com/channel/UCRPJr4hJzeJwQv0Z6_NM5iw${ENDCOLOR}"                                                
-echo $line2
+echo "--$line4$line4"
+echo $line3$line3$line3$line3$line3$line3$line3$line3$line3$line3
+echo "--$line4$line4"
 function usage
 {
 	echo ""
@@ -199,6 +208,21 @@ function wordpress
 	fi
 }
 
+function spider
+{
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	gospider -s http://$host$p -o $output/jsInfo -c 10 -d 1
+	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/jsInfo${ENDCOLOR}"
+	echo ""
+}
+
+function vhosts
+{
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	gobuster vhost -u http://$host$p -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -t 50 -o $output/vhosts.txt
+	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt${ENDCOLOR}"
+	echo ""
+}
 function com-dirb
 {
 	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
@@ -207,14 +231,13 @@ function com-dirb
 		for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}$line3 ${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR} $line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR} $line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			/usr/bin/gobuster dir -u http://$host:$i -w /usr/share/wordlists/dirb/common.txt -q -t 50 -o $output/bust-common-$i
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/bust-common-$i${ENDCOLOR}"
-
 			echo ""
 		done
 	fi
@@ -223,7 +246,6 @@ function com-dirb
 		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
 		for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
-			echo -e "${BLUE}	    Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
@@ -245,6 +267,11 @@ function http
 		wordpress $host $p
 		echo ""
 		com-dirb $host $p
+		echo ""
+		spider $host $p
+		echo ""
+		vhosts $host $p
+		echo ""
 	fi
 }
 
@@ -304,15 +331,7 @@ function nfs
 
 }
 
-function spider
-{
-	q=$(cat $output/.portsforservices | grep ^[0-9] | grep http | cut -d " " -f 1 | cut -d "/" -f 1)
-	if [[ "$q" != "" ]]; then
-		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
-		gospider -s http://$host$p -o $output/jsInfo.txt -c 10 -d 1
-		echo ""
-	fi
-}
+
 function Dirbusting
 {
 	ww=$(echo $p | cut -d ":" -f 2)
@@ -328,7 +347,7 @@ function Dirbusting
 	fi
 }
 
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#ARGS parsing
 if [[ "$1" == "" ]]
 then
 	usage
