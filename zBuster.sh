@@ -400,7 +400,6 @@ do
 		nfs $host
 		pop3 $host $p
 		smb $host
-		spider $host $p
 		http $host $p
 		echo -e "                                                ${LIGHTGREEN}[[FINISHED]]${ENDCOLOR}"
 	elif [[ "$s" == "nmap" ]]; then
