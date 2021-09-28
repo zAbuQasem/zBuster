@@ -35,7 +35,7 @@ cat <<'EOF'
                                                                                
 EOF
 echo -e "${CYAN}Author : Zeyad AbuQasem${ENDCOLOR}"      
-echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-yahya-0985971b5/${ENDCOLOR}"
+echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-abuqasem/${ENDCOLOR}"
 echo -e "${CYAN}Youtube : https://www.youtube.com/channel/UCRPJr4hJzeJwQv0Z6_NM5iw${ENDCOLOR}"                                                
 echo "--$line4$line4"
 echo $line3$line3$line3$line3$line3$line3$line3$line3$line3$line3
