@@ -219,7 +219,7 @@ function spider
 function vhosts
 {
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
-	gobuster vhost -u http://$host$p -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -t 50 -o $output/vhosts.txt
+	ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o result-zbuster/vhosts.txt -mc 200,403
 	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt${ENDCOLOR}"
 	echo ""
 }
