@@ -2,7 +2,7 @@
 
 # zBuster
 
-### zBuster is an Bash script built to automate the process of portscanning and service enumeration including a Dirbusting option.
+### zBuster is an Bash script built to automate the process of portscanning,Vitual hosts finding,services enumeration and a Dirbusting option.
 ![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.svg)
 
 ## Tools:
@@ -70,5 +70,6 @@ sudo ./zBuster.sh -u Foo.htb -s <CHECK>
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ### TODO:
-```sh
-1- Add more checks
+```txt
+Add more checks
+```
