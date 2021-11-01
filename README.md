@@ -43,7 +43,7 @@ ff02::2 ip6-allrouters
 #HackTheBox
 10.10.10.243	spider.htb
 10.10.10.240	pivotapi.htb
-10.10.11.114 bolt.htb
+10.10.11.114    bolt.htb
 ```
 
 ### All integrated checks
