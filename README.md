@@ -48,7 +48,7 @@ ff02::2 ip6-allrouters
 
 ### All integrated checks
 ```sh
-sudo ./zBuster.sh -u <TARGET-IP> -s all
+sudo ./zBuster.sh -u Foo.htb  -s all
 ```
 ### Specific check
 ```sh
