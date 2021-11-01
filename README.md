@@ -25,7 +25,7 @@
    #Make sure to Download Rustsan From:
    https://github.com/RustScan/RustScan/releases/
    #Then
-          dpkg -i ~/Downloads/rustscan_2.0.1_amd64.deb
+          sudo dpkg -i ~/Downloads/rustscan_2.0.1_amd64.deb
    ```
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -61,6 +61,12 @@ sudo ./zBuster.sh -u Foo.htb -s <CHECK>
 ### For more options:
 ```sh
 ./zBuster.sh -h
+```
+## Known issue
+```sh
+#If you faced issues with running the script:
+sudo rm -rf result-zbuster
+#If this didn't work then check your network connection..
 ```
 ## Preview [Took ~7 minutes]
 ![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.gif)
