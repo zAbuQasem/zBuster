@@ -76,7 +76,7 @@ function portcheck
 	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Running an initial portscan${ENDCOLOR} $RED[Don't Abort the scan]${ENDCOLOR}"
 	portsnmap=$(rustscan -u 5000 -g -a $host | cut -d "[" -f 2 | cut -d "]" -f 1 > portsfromrust ; cat portsfromrust)
 	cat portsfromrust | tr "," "\n" > $output/.ports ; rm portsfromrust  #here i created a file containing the ports
-	echo -e  -n "${YELLOW}[+]${ENDCOLOR}" 
+	#echo -e  -n "${YELLOW}[+]${ENDCOLOR}" 
 	nmap -Pn -p- --min-rate=1000 $host >> $output/.portsforservices 
 	cat $output/.portsforservices | grep ^[0-9] | grep -v 'closed' | grep -v 'filtered' |cut -d '/' -f 1 | tr '\n' ',' | sed s/,$// >> $output/.ports ;rm portsfromnmap 2>/dev/null
 	cat $output/.ports | tr "," "\n" | sort -u | uniq > ppp ;cp ppp $output/.ports; rm ppp 2>/dev/null
@@ -110,15 +110,15 @@ function smtp
 		for i in $q
 		do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating SMTP[USERS & COMMANDS]...${ENDCOLOR}"
-			echo -e -n "${BLUE}[*]${ENDCOLOR}"
+			#echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			echo -e "\n$line" >> $output/nmap-result
-			echo "                                  [#]SMTP USER RESULT[#]" >> $output/nmap-result
+			echo "                                  [#]SMTP COMMANDS + Vulns RESULT[#]" >> $output/nmap-result
 			echo -e "$line" >> $output/nmap-result  #design
-			nmap -Pn -p$i --script smtp-enum-users $host >> $output/nmap-result
+			nmap -Pn -p$i --script=smtp-commands,smtp-enum-users,smtp-vuln-cve2010-4344,smtp-vuln-cve2011-1720,smtp-vuln-cve2011-1764 $host >> $output/nmap-result
 			echo -e "\n$line" >> $output/nmap-result  #design
-			echo "                                  [#]SMTP COMMANDS RESULT[#]" >> $output/nmap-result
-			echo -e "$line" >> $output/nmap-result
-			nmap -p$i --script smtp-commands $host >> $output/nmap-result
+			#echo "                                  [#]SMTP Users RESULT[#]" >> $output/nmap-result
+			#echo -e "$line" >> $output/nmap-result
+			#nmap -p$i --script smtp-commands $host >> $output/nmap-result
 			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR}--> ${YELLOW}$output/nmap-result${ENDCOLOR}"
 			echo ""
 		done
@@ -134,7 +134,7 @@ function pop3
 		for i in "$q"
 		do
 			echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating POP3 capabilties...${ENDCOLOR}"
-			echo -e -n "${BLUE}[*]${ENDCOLOR}"
+			#echo -e -n "${BLUE}[*]${ENDCOLOR}"
 			echo -e "\n$line" >> $output/nmap-result >> $output/nmap-result
 			echo "                                  [#]POP3 CAPABILITIES RESULT[#]" >> $output/nmap-result
 			echo -e "$line" >> $output/nmap-result  #design
@@ -218,10 +218,38 @@ function spider
 
 function vhosts
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
-	ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o result-zbuster/vhosts.txt -mc 200,403
-	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt${ENDCOLOR}"
-	echo ""
+	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+    if [[ "$q" != "" ]]; then
+        echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+        for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+        do
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt -mc 200,403,302
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt-$i${ENDCOLOR}"
+            echo ""
+        done
+    fi
+    q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
+    if [[ "$q" != "" ]]; then
+        echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+        for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
+        do
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt -mc 200,403,302
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt-$i${ENDCOLOR}"
+            echo ""
+        done
+    fi
 }
 function com-dirb
 {
@@ -231,9 +259,9 @@ function com-dirb
 		for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}$line3${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR} $line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			/usr/bin/gobuster dir -u http://$host:$i -w /usr/share/wordlists/dirb/common.txt -q -t 50 -o $output/bust-common-$i
+			dirsearch -u http://$host -q -t 50 -o $output/bust-common-$i
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
@@ -247,9 +275,9 @@ function com-dirb
 		for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}$line3${BLUE}Dirbusting Port -> ${YELLOW}$i${ENDCOLOR}$line3${ENDCOLOR}"
+			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			/usr/bin/gobuster dir -u https://$host:$i -w /usr/share/wordlists/dirb/common.txt -k -q -t 50 -o $output/bust-common-$i
+			dirsearch -u http://$host -q -t 50 -o $output/bust-common-$i
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
@@ -298,7 +326,7 @@ function smb
 				smbclient -L ////$host// -N
 				echo ""
 				echo -e "${BLUE}[*]${ENDCOLOR}${RED}Using NMAP to Enum share paths...${ENDCOLOR}"
-				echo -e -n "${BLUE}[*]${ENDCOLOR}"
+				#echo -e -n "${BLUE}[*]${ENDCOLOR}"
 				nmap -Pn --script smb-enum-shares $host -oN $output/smb-enum-shares 2>/dev/null
 				echo""
 			fi
@@ -466,3 +494,4 @@ do
     ;;
 	esac
 done
+chmod 777 -R $output
