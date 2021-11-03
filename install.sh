@@ -22,3 +22,5 @@ crackmapexec
 sudo apt install nfs-common -y
 #memcache
 sudo apt install libmemcached-tools -y
+#dirsearch
+sudo apt install dirsearch -y
