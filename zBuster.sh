@@ -13,8 +13,8 @@ CYAN="\e[35m"
 
 line=$(for i in {1..120};do printf '-' ;done)
 line2=$(for i in {1..80};do printf '-' ;done)
-line3=$(for i in {1..8};do printf '#' ;done)
-line4=$(for i in {1..39};do printf '-' ;done)
+line3=$(for i in {1..6};do printf '#' ;done)
+line4=$(for i in {1..41};do printf '-' ;done)
 output="result-zbuster"
 mkdir $output 2>/dev/null
 cat <<'EOF'                                                                    
@@ -32,14 +32,10 @@ cat <<'EOF'
 ;   |  .'    |   :   /  :  ,      .-./'--'.     / |  ,   / |   :    | ---'     
 `---'        |   | ,'    `--`----'      `--'---'   ---`-'   \   \  /       v1337.0   
              `----'                                          `----'            
-                                                                               
+                      By-> AbuQasem                                                         
 EOF
-echo -e "${CYAN}Author : Zeyad AbuQasem${ENDCOLOR}"      
-echo -e "${CYAN}Linkedin : https://www.linkedin.com/in/zeyad-abuqasem/${ENDCOLOR}"
-echo -e "${CYAN}Youtube : https://www.youtube.com/channel/UCRPJr4hJzeJwQv0Z6_NM5iw${ENDCOLOR}"                                                
-echo "--$line4$line4"
-echo $line3$line3$line3$line3$line3$line3$line3$line3$line3$line3
-echo "--$line4$line4"
+
+
 function usage
 {
 	echo ""
@@ -210,44 +206,45 @@ function wordpress
 
 function spider
 {
-	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Extracting Juicy information from JavaScript${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
+	echo -e "${YELLOW}$line4-------------${ENDCOLOR}"
+	echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE}Extracting info from JS files from port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
+	echo -e "${YELLOW}$line4-------------${ENDCOLOR}"
 	gospider -s http://$host$p -o $output/jsInfo -c 10 -d 1
-	echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/jsInfo${ENDCOLOR}"
-	echo ""
 }
 
+function subdomain
+{
+	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+    if [[ "$q" != "" ]]; then
+        for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
+        do
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Subdomains on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
+            echo -e "${YELLOW}$line4${ENDCOLOR}"
+            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u "http://FUZZ.$host" -o $output/subdomains.txt-$i
+        done
+    fi
+}
 function vhosts
 {
 	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
     if [[ "$q" != "" ]]; then
-        echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
         for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
         do
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt -mc 200,403,302
-            echo -e "${YELLOW}$line4${ENDCOLOR}"
-            echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
-            echo -e "${YELLOW}$line4${ENDCOLOR}"
-            echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt-$i${ENDCOLOR}"
-            echo ""
+            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt
         done
     fi
     q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
     if [[ "$q" != "" ]]; then
-        echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating for vhosts${ENDCOLOR}${BLUE}[*]${ENDCOLOR}"
         for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
         do
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt -mc 200,403,302
-            echo -e "${YELLOW}$line4${ENDCOLOR}"
-            echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
-            echo -e "${YELLOW}$line4${ENDCOLOR}"
-            echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/vhosts.txt-$i${ENDCOLOR}"
-            echo ""
+            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt
         done
     fi
 }
@@ -262,11 +259,6 @@ function com-dirb
 			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			dirsearch -u http://$host -q -t 50 -o $output/bust-common-$i
-			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
-			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/bust-common-$i${ENDCOLOR}"
-			echo ""
 		done
 	fi
 	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
@@ -278,11 +270,6 @@ function com-dirb
 			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			dirsearch -u http://$host -q -t 50 -o $output/bust-common-$i
-			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}$line3$line3$line3$line3######${ENDCOLOR}"
-			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			echo -e "${YELLOW}[+]${ENDCOLOR}${GRAY}Done! check${ENDCOLOR} --> $output/bust-common-$i${ENDCOLOR}"
-			echo ""
 		done
 	fi
 
@@ -300,6 +287,7 @@ function http
 		echo ""
 		vhosts $host $p
 		echo ""
+		subdomain $host $p
 	fi
 }
 
