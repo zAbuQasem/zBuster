@@ -221,7 +221,7 @@ function subdomain
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Subdomains on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u "http://FUZZ.$host" -o $output/subdomains.txt-$i
+            ffuf -u http://FUZZ.$host -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -o $output/subdomains.txt-$i
         done
     fi
 }
@@ -234,7 +234,7 @@ function vhosts
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt
+            gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt -q
         done
     fi
     q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
@@ -244,7 +244,7 @@ function vhosts
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt
+            gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -o $output/vhosts.txt -q
         done
     fi
 }
@@ -269,7 +269,7 @@ function com-dirb
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			dirsearch -u http://$host -q -t 50 -o $output/bust-common-$i
+			dirsearch -u https://$host -q -t 50 -o $output/bust-common-$i
 		done
 	fi
 
