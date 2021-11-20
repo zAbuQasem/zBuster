@@ -168,7 +168,7 @@ function wordpress
 		do
 			/usr/bin/wpscan  --url http://$host:$x --no-banner --update  -e u vp vt -o $output/wp-result-$x #2>/dev/null
 			echo "" >> $output/wp-result-$x
-			echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'" >> $output/wp-result-$x
+			echo -e "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'\nTry a bruteforcing with a wordpress plugins wordlist => /usr/share/seclists/Discovery/Web-Content/CMS/wp-plugins.fuzz.txt" >> $output/wp-result-$x
 			clean=$(cat $output/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
 			clean2=$(cat $output/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
 			clean3=$(cat $output/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
@@ -187,9 +187,9 @@ function wordpress
 		else
 			for x in $q
 			do
-				wpscan  --url https://$host:$x --disable-tls-checks --no-banner --update  -e u vp vt -o $output/wp-result-$x 2>/dev/null
+				/usr/bin/wpscan  --url https://$host:$x --disable-tls-checks --no-banner --update  -e u vp vt -o $output/wp-result-$x 2>/dev/null
 				echo "" >> $output/wp-result-$x
-				echo "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive' option" >> $output/wp-result-$x
+				echo -e "//////If no plugins where detected make sure to run wpscan with --> '--plugins-detection aggressive'\nTry a bruteforcing with a wordpress plugins wordlist => /usr/share/seclists/Discovery/Web-Content/CMS/wp-plugins.fuzz.txt" >> $output/wp-result-$x
 				clean=$(cat $output/wp-result-$x 2>/dev/null | cut -d " " -f 10 | grep "down")
 				clean2=$(cat $output/wp-result-$x 2>/dev/null | cut -d " " -f 7 | grep -i 'up' | cut -d "," -f 1)
 				clean3=$(cat $output/wp-result-$x 2>/dev/null | tr " " "\n" | grep '\-\-ignore-main-redirect')
@@ -219,12 +219,14 @@ function subdomain
         for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
         do
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Subdomains on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
+            echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Subdomains ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            ffuf -u http://FUZZ.$host -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -o $output/subdomains.txt-$i
+            gobuster dns -d $host -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -r -t 50 -q -o $output/subdomains.txt
+            echo ""
         done
     fi
 }
+
 function vhosts
 {
 	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
@@ -234,7 +236,8 @@ function vhosts
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -H 'Host: FUZZ.$host' -o $output/vhosts.txt -q
+            gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u http://$host -r -t 50 -q -o $output/vhosts.txt
+            echo ""
         done
     fi
     q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
@@ -244,17 +247,36 @@ function vhosts
             echo -e "${YELLOW}$line4${ENDCOLOR}"
             echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Looking for Vhosts on -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
             echo -e "${YELLOW}$line4${ENDCOLOR}"
-            gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -o $output/vhosts.txt -q
+            gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -u https://$host -r -t 50 -q -o $output/vhosts.txt 
+            echo ""
         done
     fi
 }
+
+function whatweeb
+{
+	echo -e "${YELLOW}$line4${ENDCOLOR}"
+	echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE}Identifying Webapp Services -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
+	echo -e "${YELLOW}$line4${ENDCOLOR}"
+	echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating $host${ENDCOLOR}"
+	whatweb $host | tr "," "\n" 
+	(cat $output/vhosts.txt &&  cat $output/subdomains.txt) | awk '{split($0, a, " ");print a[2]}'| anew /tmp/lol.txt &>/dev/null
+	domain=$(cat /tmp/lol.txt)
+	for i in "$domain"
+	do
+		echo -e "\n${BLUE}[*]${ENDCOLOR}${GRAY}Enumerating $domain${ENDCOLOR}" 
+		whatweb $domain | tr "," "\n" 
+		echo ""
+	done
+}
+
 function com-dirb
 {
 	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
-		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
 		for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "http" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
+			echo ""
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
@@ -263,13 +285,13 @@ function com-dirb
 	fi
 	q=$(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 	if [[ "$q" != "" ]]; then
-		echo -e "${BLUE}[*]${ENDCOLOR}${GRAY}Dirbusting Common Dirs/Files${ENDCOLOR}"
 		for i in $(cat $output/.portsforservices | grep ^[0-9] | fgrep -w "https" | cut -d " " -f 1 | cut -d "/" -f 1)
 		do
+			echo ""
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
 			echo -e "${YELLOW}$line3${ENDCOLOR}${BLUE} Dirbusting Port -> ${ENDCOLOR}${RED}$i${ENDCOLOR} ${YELLOW}$line3${ENDCOLOR}"
 			echo -e "${YELLOW}$line4${ENDCOLOR}"
-			dirsearch -u https://$host -q -t 50 -o $output/bust-common-$i
+			dirsearch -u http://$host -q -t 50 -o $output/bust-common-$i
 		done
 	fi
 
@@ -288,6 +310,9 @@ function http
 		vhosts $host $p
 		echo ""
 		subdomain $host $p
+		echo ""
+		whatweeb $host
+		echo ""
 	fi
 }
 
@@ -344,7 +369,6 @@ function nfs
 			echo ""
 		done
 	fi
-
 }
 
 
@@ -483,3 +507,7 @@ do
 	esac
 done
 chmod 777 -R $output
+
+
+#Add udp scan
+#Improve vhosts and subdomain scanning
