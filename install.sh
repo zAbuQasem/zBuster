@@ -32,4 +32,10 @@ else
     git clone https://github.com/danielmiessler/SecLists.git
     sudo mv SecLists /usr/share/seclists
 fi
+#install anew and httprobe
+go get -u github.com/tomnomnom/anew
+go get -u github.com/tomnomnom/httprobe
+
+#install whatweb (kali)
+sudo apt install whatweb
 
