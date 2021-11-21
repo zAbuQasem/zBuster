@@ -2,7 +2,7 @@
 
 # zBuster
 
-### zBuster is a bash script built to automate the process of portscanning, vhosts finding, services enumeration basic directory brute-forcing.
+### zBuster is a bash script built to automate the process of portscanning, vhosts finding, services enumeration and basic directory brute-forcing.
 ![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.svg)
 
 ## Tools:
