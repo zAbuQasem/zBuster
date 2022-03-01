@@ -68,7 +68,7 @@ sudo ./zBuster.sh -u Foo.htb -s <CHECK>
 sudo rm -rf result-zbuster
 #If this didn't work then check your network connection..
 ```
-## Preview [Took ~7 minutes]
+## Preview [Took ~7 minutes] (old)
 ![Alt text](https://github.com/zAbuQasem/zBuster/blob/main/Screenshots/zbuster.gif)
   
 ## License
